@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Intelligence Dashboard - PARLAMI.AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e1a;
+            background-image: 
+                radial-gradient(at 20% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+                radial-gradient(at 80% 80%, rgba(124, 58, 237, 0.1) 0%, transparent 50%);
+            color: #e2e8f0;
+            padding: 20px;
+            min-height: 100vh;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            padding: 50px 60px;
+            border-radius: 24px;
+            margin-bottom: 40px;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .logo {
+            height: 120px;
+            width: auto;
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        .header-content {
+            flex: 1;
+        }
+
+        h1 {
+            font-size: 3.2em;
+            margin-bottom: 12px;
+            color: #06b6d4;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1.4em;
+            font-weight: 400;
+            letter-spacing: 0.01em;
+        }
+
+        .campaign-table {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            margin-bottom: 30px;
+            border: 1px solid rgba(6, 182, 212, 0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(6, 182, 212, 0.1);
+            border-bottom: 2px solid rgba(6, 182, 212, 0.3);
+        }
+
+        th {
+            padding: 20px 18px;
+            text-align: left;
+            font-weight: 600;
+            color: #06b6d4;
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 18px 18px;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+            color: #cbd5e1;
+            font-size: 1.05em;
+        }
+
+        tbody tr {
+            transition: all 0.2s;
+        }
+
+        tbody tr:hover {
+            background: rgba(6, 182, 212, 0.05);
+            transform: translateX(4px);
+        }
+
+        .metric-good {
+            color: #10b981;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(16, 185, 129, 0.2);
+        }
+
+        .metric-warning {
+            color: #f59e0b;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(245, 158, 11, 0.2);
+        }
+
+        .metric-bad {
+            color: #ef4444;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(239, 68, 68, 0.2);
+        }
+
+        .suggestions-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            border: 1px solid rgba(6, 182, 212, 0.2);
+        }
+
+        .suggestion-item {
+            padding: 24px;
+            border-left: 4px solid rgba(6, 182, 212, 0.5);
+            background: rgba(30, 41, 59, 0.4);
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .suggestion-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 6px 24px rgba(6, 182, 212, 0.2);
+            border-left-color: #06b6d4;
+        }
+
+        .suggestion-item.urgent {
+            border-left-color: #ef4444;
+            background: rgba(127, 29, 29, 0.2);
+        }
+
+        .suggestion-item.urgent:hover {
+            border-left-color: #fca5a5;
+            box-shadow: 0 6px 24px rgba(239, 68, 68, 0.3);
+        }
+
+        .suggestion-item.high {
+            border-left-color: #f59e0b;
+            background: rgba(120, 53, 15, 0.2);
+        }
+
+        .suggestion-item.high:hover {
+            border-left-color: #fbbf24;
+            box-shadow: 0 6px 24px rgba(245, 158, 11, 0.3);
+        }
+
+        .suggestion-item.medium {
+            border-left-color: #3b82f6;
+            background: rgba(30, 58, 138, 0.2);
+        }
+
+        .suggestion-item.medium:hover {
+            border-left-color: #60a5fa;
+            box-shadow: 0 6px 24px rgba(59, 130, 246, 0.3);
+        }
+
+        .suggestion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .suggestion-title {
+            font-weight: 600;
+            font-size: 1.25em;
+            color: #f1f5f9;
+        }
+
+        .suggestion-priority {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .priority-urgent {
+            background: #ef4444;
+            color: white;
+        }
+
+        .priority-high {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .priority-medium {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .suggestion-reasoning {
+            color: #94a3b8;
+            margin-bottom: 10px;
+            line-height: 1.6;
+            font-size: 1.05em;
+        }
+
+        .suggestion-impact {
+            color: #10b981;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .suggestion-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 1.05em;
+        }
+
+        .btn-approve {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            color: white;
+            box-shadow: 0 4px 16px rgba(6, 182, 212, 0.3);
+        }
+
+        .btn-approve:hover {
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-reject {
+            background: rgba(51, 65, 85, 0.5);
+            color: #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .btn-reject:hover {
+            background: rgba(71, 85, 105, 0.5);
+            transform: translateY(-1px);
+            border-color: rgba(148, 163, 184, 0.4);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+            font-size: 1.1em;
+        }
+
+        .drill-down {
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .drill-down.active {
+            display: block;
+        }
+
+        .back-btn {
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .back-btn:hover {
+            background: #cbd5e0;
+        }
+
+        .asset-group-item, .asset-item {
+            background: linear-gradient(135deg, #fefeff 0%, #f8fafc 100%);
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .asset-group-item:hover, .asset-item:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transform: translateX(4px);
+            border-color: #c4b5fd;
+        }
+
+        .metric-row {
+            display: flex;
+            gap: 30px;
+            margin-top: 10px;
+        }
+
+        .metric {
+            font-size: 1em;
+        }
+
+        .metric-label {
+            color: #64748b;
+            margin-right: 5px;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(124, 58, 237, 0.4);
+            transition: all 0.2s;
+        }
+
+        .analyze-btn:hover {
+            background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .analysis-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        h2 {
+            color: #06b6d4;
+            font-weight: 700;
+            font-size: 1.8em;
+            letter-spacing: -0.01em;
+        }
+
+        .analysis-section h3 {
+            margin-bottom: 15px;
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .waste-item {
+            padding: 12px;
+            background: #fef2f2;
+            border-left: 3px solid #ef4444;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .quality-item {
+            padding: 12px;
+            background: #fffbeb;
+            border-left: 3px solid #f59e0b;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .location-item {
+            padding: 12px;
+            background: #eff6ff;
+            border-left: 3px solid #3b82f6;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        /* Action Buttons */
+        .action-buttons-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            position: relative;
+            padding: 18px 36px;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            min-width: 240px;
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .action-btn:hover::before {
+            opacity: 1;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(6, 182, 212, 0.5);
+        }
+
+        .action-btn:active {
+            transform: translateY(-2px);
+        }
+
+        /* Beibei buttons - Cyan theme */
+        .btn-beibei {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.4);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+
+        .btn-beibei:hover {
+            box-shadow: 0 8px 35px rgba(6, 182, 212, 0.6);
+        }
+
+        /* Amici buttons - Purple theme */
+        .btn-amici {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+        }
+
+        .btn-amici:hover {
+            box-shadow: 0 8px 35px rgba(124, 58, 237, 0.6);
+        }
+
+        /* Button icons */
+        .btn-icon {
+            font-size: 1.3em;
+            margin-right: 10px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        /* Button groups */
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .button-group-label {
+            width: 100%;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/" style="display: block; cursor: pointer;">
+                <img src="/static/logo.png" alt="PARLAMI.AI Logo" class="logo" style="transition: all 0.2s;">
+            </a>
+            <div class="header-content">
+                <h1>Marketing Intelligence Dashboard</h1>
+                <p class="subtitle">AI-Driven Campaign Performance Analysis</p>
+            </div>
+            <div style="font-size: 0.75em; color: #64748b; text-align: right;">
+                <div>Beibei Amigos & Amici Montessori</div>
+                <div style="margin-top: 4px;">Updated: <span id="page-load-time"></span></div>
+            </div>
+        </header>
+        
+        <script>
+            document.getElementById('page-load-time').textContent = new Date().toLocaleTimeString();
+            console.log('Page loaded at', new Date().toLocaleTimeString());
+        </script>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons-container">
+            <!-- GA4 Analytics Section -->
+            <div style="width: 100%;">
+                <div class="button-group-label">📊 Analytics Intelligence</div>
+                <div class="button-group">
+                    <button onclick="toggleGA4Analysis('beibei')" class="action-btn btn-beibei">
+                        <span class="btn-icon">📈</span>
+                        Beibei Analytics
+                    </button>
+                    <button onclick="toggleGA4Analysis('amici')" class="action-btn btn-amici">
+                        <span class="btn-icon">📈</span>
+                        Amici Analytics
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Keyword Analysis Section -->
+            <div style="width: 100%; margin-top: 20px;">
+                <div class="button-group-label">🔍 Keyword Intelligence</div>
+                <div class="button-group">
+                    <button onclick="toggleKeywordAnalysis('beibei')" class="action-btn btn-beibei">
+                        <span class="btn-icon">🔎</span>
+                        Beibei Keywords
+                    </button>
+                    <button onclick="toggleKeywordAnalysis('amici')" class="action-btn btn-amici">
+                        <span class="btn-icon">🔎</span>
+                        Amici Keywords
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- GA4 Analysis Panel (hidden by default) -->
+        <div id="ga4-analysis-panel" style="display: none; margin-bottom: 30px;">
+            <div class="suggestions-panel">
+                <h2 id="ga4-analysis-title" style="margin-bottom: 24px;">📈 Google Analytics Intelligence</h2>
+                <div id="ga4-analysis-content">
+                    <div class="loading">Loading analytics data...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keyword Analysis Panel (hidden by default) -->
+        <div id="keyword-analysis-panel" style="display: none; margin-bottom: 30px;">
+            <div class="suggestions-panel">
+                <h2 id="keyword-analysis-title" style="margin-bottom: 24px;">🔍 Keyword Intelligence</h2>
+                <div id="keyword-analysis-content">
+                    <div class="loading">Loading keyword analysis...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suggestions Panel -->
+        <div class="suggestions-panel">
+            <h2 style="margin-bottom: 20px;">💡 Recommended Actions</h2>
+            <div id="suggestions-container">
+                <div class="loading">Loading recommendations...</div>
+            </div>
+        </div>
+
+        <!-- Campaign Performance Table - BEIBEI -->
+        <div class="campaign-table">
+            <div style="padding: 20px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-bottom: 2px solid #3b82f6;">
+                <h2 style="margin: 0; color: #1e3a8a;">🏫 Beibei Amigos Language Preschool</h2>
+                <div id="beibei-totals" style="display: flex; gap: 30px; margin-top: 10px; font-size: 0.9em; color: #64748b;"></div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Campaign</th>
+                        <th>Cost</th>
+                        <th>Clicks</th>
+                        <th>Conversions</th>
+                        <th>Conv Rate</th>
+                        <th>Cost/Conv</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="beibei-tbody">
+                    <tr>
+                        <td colspan="7" class="loading">Loading Beibei campaigns...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Campaign Performance Table - AMICI -->
+        <div class="campaign-table" style="margin-top: 30px;">
+            <div style="padding: 20px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-bottom: 2px solid #f59e0b;">
+                <h2 style="margin: 0; color: #92400e;">🏫 Amici Trilingual Montessori</h2>
+                <div id="amici-totals" style="display: flex; gap: 30px; margin-top: 10px; font-size: 0.9em; color: #64748b;"></div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Campaign</th>
+                        <th>Cost</th>
+                        <th>Clicks</th>
+                        <th>Conversions</th>
+                        <th>Conv Rate</th>
+                        <th>Cost/Conv</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="amici-tbody">
+                    <tr>
+                        <td colspan="7" class="loading">Loading Amici campaigns...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Cost Analysis Panel -->
+        <div id="cost-analysis-panel" class="drill-down">
+            <button class="back-btn" onclick="closeCostAnalysis()">← Back to Campaigns</button>
+            <h2 id="cost-analysis-title">Cost Per Conversion Analysis</h2>
+            <div id="cost-analysis-container"></div>
+        </div>
+
+        <!-- Asset Group Drill-Down -->
+        <div id="asset-groups-panel" class="drill-down">
+            <button class="back-btn" onclick="closeAssetGroups()">← Back to Campaigns</button>
+            <h2 id="asset-groups-title">Asset Groups</h2>
+            <div id="asset-groups-container"></div>
+        </div>
+
+        <!-- Assets Drill-Down -->
+        <div id="assets-panel" class="drill-down">
+            <button class="back-btn" onclick="closeAssets()">← Back to Asset Groups</button>
+            <h2 id="assets-title">Individual Assets</h2>
+            <div id="assets-container"></div>
+        </div>
+    </div>
+
+    <script>
+        let allCampaigns = [];
+        let currentCampaignId = null;
+
+        async function loadCampaigns() {
+            console.log('loadCampaigns() called');
+            try {
+                const response = await fetch('/api/campaigns?days=30');
+                console.log('Response received:', response.status);
+                const data = await response.json();
+                console.log('Data parsed:', data.success, 'campaigns:', data.count);
+                
+                if (data.success) {
+                    console.log('by_school data:', data.by_school);
+                    allCampaigns = data.campaigns;
+                    renderCampaignsBySchool(data.by_school);
+                    renderSuggestions(data.campaigns);
+                    console.log('Rendering complete');
+                }
+            } catch (error) {
+                console.error('Failed to load campaigns:', error);
+                document.getElementById('beibei-tbody').innerHTML = '<tr><td colspan="7" style="color: red;">ERROR: ' + error.message + '</td></tr>';
+                document.getElementById('amici-tbody').innerHTML = '<tr><td colspan="7" style="color: red;">ERROR: ' + error.message + '</td></tr>';
+            }
+        }
+
+        function renderCampaignsBySchool(bySchool) {
+            // Render Beibei campaigns
+            const beibeiTbody = document.getElementById('beibei-tbody');
+            const beibeiTotals = document.getElementById('beibei-totals');
+            
+            if (bySchool.beibei.campaigns.length === 0) {
+                beibeiTbody.innerHTML = '<tr><td colspan="7" class="loading">No Beibei campaigns found</td></tr>';
+                beibeiTotals.innerHTML = '';
+            } else {
+                beibeiTbody.innerHTML = bySchool.beibei.campaigns.map(campaign => renderCampaignRow(campaign)).join('');
+                beibeiTotals.innerHTML = `
+                    <div><strong>Total Cost:</strong> $${bySchool.beibei.totals.cost.toFixed(2)}</div>
+                    <div><strong>Total Clicks:</strong> ${bySchool.beibei.totals.clicks}</div>
+                    <div><strong>Total Conversions:</strong> ${bySchool.beibei.totals.conversions.toFixed(1)}</div>
+                    <div><strong>Avg Conv Rate:</strong> ${bySchool.beibei.totals.conv_rate.toFixed(2)}%</div>
+                    <div><strong>Avg Cost/Conv:</strong> $${bySchool.beibei.totals.cost_per_conv.toFixed(2)}</div>
+                `;
+            }
+            
+            // Render Amici campaigns
+            const amiciTbody = document.getElementById('amici-tbody');
+            const amiciTotals = document.getElementById('amici-totals');
+            
+            if (bySchool.amici.campaigns.length === 0) {
+                amiciTbody.innerHTML = '<tr><td colspan="7" class="loading">No Amici campaigns found</td></tr>';
+                amiciTotals.innerHTML = '';
+            } else {
+                amiciTbody.innerHTML = bySchool.amici.campaigns.map(campaign => renderCampaignRow(campaign)).join('');
+                amiciTotals.innerHTML = `
+                    <div><strong>Total Cost:</strong> $${bySchool.amici.totals.cost.toFixed(2)}</div>
+                    <div><strong>Total Clicks:</strong> ${bySchool.amici.totals.clicks}</div>
+                    <div><strong>Total Conversions:</strong> ${bySchool.amici.totals.conversions.toFixed(1)}</div>
+                    <div><strong>Avg Conv Rate:</strong> ${bySchool.amici.totals.conv_rate.toFixed(2)}%</div>
+                    <div><strong>Avg Cost/Conv:</strong> $${bySchool.amici.totals.cost_per_conv.toFixed(2)}</div>
+                `;
+            }
+        }
+
+        function renderCampaignRow(campaign) {
+            const convRateClass = campaign.conv_rate === 0 ? 'metric-bad' : 
+                                 campaign.conv_rate < 2 ? 'metric-warning' : 'metric-good';
+            
+            const costPerConvClass = campaign.conversions === 0 ? 'metric-bad' :
+                                    campaign.cost_per_conv > 50 ? 'metric-warning' : 'metric-good';
+            
+            return `
+                <tr>
+                    <td><strong>${campaign.name}</strong></td>
+                    <td>$${campaign.cost.toFixed(2)}</td>
+                    <td>${campaign.clicks}</td>
+                    <td>${campaign.conversions.toFixed(1)}</td>
+                    <td class="${convRateClass}">${campaign.conv_rate.toFixed(2)}%</td>
+                    <td class="${costPerConvClass}">
+                        $${campaign.cost_per_conv.toFixed(2)}
+                        ${campaign.cost_per_conv > 30 || campaign.conv_rate === 0 ? 
+                            `<br><button class="analyze-btn" onclick="event.stopPropagation(); analyzeCost(${campaign.id}, '${campaign.name.replace(/'/g, "\\'")}')">🔍 Why?</button>` : ''}
+                    </td>
+                    <td>${campaign.status}</td>
+                </tr>
+            `;
+        }
+
+        function renderSuggestions(campaigns) {
+            const container = document.getElementById('suggestions-container');
+            const allSuggestions = [];
+            
+            campaigns.forEach(campaign => {
+                if (campaign.suggestions) {
+                    campaign.suggestions.forEach(sug => {
+                        allSuggestions.push({...sug, campaign: campaign.name});
+                    });
+                }
+            });
+            
+            if (allSuggestions.length === 0) {
+                container.innerHTML = '<div class="loading">✅ No urgent issues found. Campaigns are performing well!</div>';
+                return;
+            }
+            
+            // Sort by priority
+            const priorityOrder = {urgent: 0, high: 1, medium: 2, low: 3};
+            allSuggestions.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+            
+            container.innerHTML = allSuggestions.map(sug => `
+                <div class="suggestion-item ${sug.priority}">
+                    <div class="suggestion-header">
+                        <div class="suggestion-title">${sug.title}</div>
+                        <div class="suggestion-priority priority-${sug.priority}">${sug.priority}</div>
+                    </div>
+                    <div class="suggestion-reasoning">${sug.reasoning}</div>
+                    ${sug.why ? `
+                        <details style="margin: 15px 0;">
+                            <summary style="cursor: pointer; font-weight: 600; color: #4a5568;">🔍 Why is this happening?</summary>
+                            <div style="margin-top: 10px; padding: 15px; background: rgba(255,255,255,0.5); border-radius: 6px; white-space: pre-line; line-height: 1.6;">
+                                ${sug.why}
+                            </div>
+                        </details>
+                    ` : ''}
+                    <div class="suggestion-impact">💰 ${sug.impact}</div>
+                    <div class="suggestion-actions">
+                        <button class="btn btn-approve" onclick="approveSuggestion('${sug.type}', '${sug.title.replace(/'/g, "\\'")}', '${JSON.stringify(sug.parameters).replace(/'/g, "\\'")}', '${sug.reasoning.replace(/'/g, "\\'")}', '${sug.priority}')">
+                            ✅ Approve
+                        </button>
+                        <button class="btn btn-reject">❌ Ignore</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function showAssetGroups(campaignId, campaignName) {
+            currentCampaignId = campaignId;
+            document.getElementById('asset-groups-title').textContent = `Asset Groups: ${campaignName}`;
+            
+            try {
+                const response = await fetch(`/api/campaigns/${campaignId}/asset_groups`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const container = document.getElementById('asset-groups-container');
+                    
+                    if (data.asset_groups.length === 0) {
+                        container.innerHTML = '<div class="loading">No asset groups found for this campaign</div>';
+                    } else {
+                        container.innerHTML = data.asset_groups.map(ag => `
+                            <div class="asset-group-item" onclick="showAssets(${ag.id}, '${ag.name.replace(/'/g, "\\'")}')">
+                                <strong>${ag.name}</strong>
+                                <div class="metric-row">
+                                    <div class="metric">
+                                        <span class="metric-label">Cost:</span>
+                                        <span class="metric-value">$${ag.cost.toFixed(2)}</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-label">Clicks:</span>
+                                        <span class="metric-value">${ag.clicks}</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-label">Conv Rate:</span>
+                                        <span class="metric-value">${ag.conv_rate.toFixed(2)}%</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-label">Cost/Conv:</span>
+                                        <span class="metric-value">$${ag.cost_per_conv.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                    
+                    document.getElementById('asset-groups-panel').classList.add('active');
+                }
+            } catch (error) {
+                console.error('Failed to load asset groups:', error);
+            }
+        }
+
+        async function showAssets(assetGroupId, assetGroupName) {
+            document.getElementById('assets-title').textContent = `Assets: ${assetGroupName}`;
+            
+            try {
+                const response = await fetch(`/api/asset_groups/${assetGroupId}/assets`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const container = document.getElementById('assets-container');
+                    
+                    if (data.assets.length === 0) {
+                        container.innerHTML = '<div class="loading">No assets found</div>';
+                    } else {
+                        container.innerHTML = data.assets.map(asset => `
+                            <div class="asset-item">
+                                <strong>${asset.name}</strong>
+                                <div class="metric-row">
+                                    <div class="metric">
+                                        <span class="metric-label">Type:</span>
+                                        <span class="metric-value">${asset.type}</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-label">Clicks:</span>
+                                        <span class="metric-value">${asset.clicks}</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-label">Impressions:</span>
+                                        <span class="metric-value">${asset.impressions}</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-label">CTR:</span>
+                                        <span class="metric-value">${asset.ctr.toFixed(2)}%</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-label">Cost:</span>
+                                        <span class="metric-value">$${asset.cost.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                    
+                    document.getElementById('assets-panel').classList.add('active');
+                }
+            } catch (error) {
+                console.error('Failed to load assets:', error);
+            }
+        }
+
+        function closeAssetGroups() {
+            document.getElementById('asset-groups-panel').classList.remove('active');
+        }
+
+        function closeAssets() {
+            document.getElementById('assets-panel').classList.remove('active');
+        }
+
+        function closeCostAnalysis() {
+            document.getElementById('cost-analysis-panel').classList.remove('active');
+        }
+
+        async function analyzeCost(campaignId, campaignName) {
+            document.getElementById('cost-analysis-title').textContent = `Cost Analysis: ${campaignName}`;
+            
+            const container = document.getElementById('cost-analysis-container');
+            container.innerHTML = '<div class="loading">Analyzing costs...</div>';
+            
+            document.getElementById('cost-analysis-panel').classList.add('active');
+            
+            try {
+                const response = await fetch(`/api/campaigns/${campaignId}/cost_analysis`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const analysis = data.analysis;
+                    let html = '';
+                    
+                    // Search terms analysis
+                    if (analysis.search_terms && analysis.search_terms.wasteful_terms && analysis.search_terms.wasteful_terms.length > 0) {
+                        html += `
+                            <div class="analysis-section">
+                                <h3>🔍 Wasteful Search Terms (${analysis.search_terms.wasteful_terms.length} found)</h3>
+                                <p><strong>Total waste: $${analysis.search_terms.total_waste.toFixed(2)}/month</strong></p>
+                                ${analysis.search_terms.wasteful_terms.map(term => `
+                                    <div class="waste-item">
+                                        <strong>"${term.term}"</strong><br>
+                                        Cost: $${term.cost.toFixed(2)} | Clicks: ${term.clicks} | Conversions: ${term.conversions}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+                    
+                    // Location analysis
+                    if (analysis.locations && analysis.locations.poor_locations && analysis.locations.poor_locations.length > 0) {
+                        html += `
+                            <div class="analysis-section">
+                                <h3>📍 Poor Performing Locations</h3>
+                                <p><strong>Total location waste: $${analysis.locations.total_location_waste.toFixed(2)}/month</strong></p>
+                                ${analysis.locations.poor_locations.map(loc => `
+                                    <div class="location-item">
+                                        Location: ${loc.location}<br>
+                                        Cost: $${loc.cost.toFixed(2)} | Conv Rate: ${loc.conv_rate.toFixed(2)}%
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+                    
+                    // Quality scores
+                    if (analysis.quality_scores && analysis.quality_scores.low_quality_keywords && analysis.quality_scores.low_quality_keywords.length > 0) {
+                        html += `
+                            <div class="analysis-section">
+                                <h3>⭐ Quality Score Issues</h3>
+                                <p><strong>Average QS: ${analysis.quality_scores.avg_quality_score.toFixed(1)}/10</strong></p>
+                                ${analysis.quality_scores.low_quality_keywords.map(kw => `
+                                    <div class="quality-item">
+                                        <strong>"${kw.keyword}"</strong><br>
+                                        Quality Score: ${kw.quality_score}/10 | Cost: $${kw.cost.toFixed(2)}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+                    
+                    // Recommendations
+                    if (analysis.recommendations && analysis.recommendations.length > 0) {
+                        html += `
+                            <div class="analysis-section">
+                                <h3>💡 Recommendations</h3>
+                                ${analysis.recommendations.map(rec => `
+                                    <div class="suggestion-item ${rec.priority}">
+                                        <div class="suggestion-header">
+                                            <div class="suggestion-title">${rec.title}</div>
+                                            <div class="suggestion-priority priority-${rec.priority}">${rec.priority}</div>
+                                        </div>
+                                        <div class="suggestion-reasoning">${rec.reasoning}</div>
+                                        ${rec.details ? rec.details.map(d => `<div style="margin: 5px 0; color: #4a5568;">• ${d}</div>`).join('') : ''}
+                                        <div class="suggestion-impact">💰 ${rec.impact}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+                    
+                    if (!html) {
+                        html = '<div class="loading">✅ No major issues found. Campaign is performing reasonably well!</div>';
+                    }
+                    
+                    container.innerHTML = html;
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="loading">❌ Error analyzing costs: ${error.message}</div>`;
+            }
+        }
+
+        async function approveSuggestion(type, title, parametersJson, reasoning, priority) {
+            try {
+                const parameters = JSON.parse(parametersJson);
+                
+                const response = await fetch('/api/approve_suggestion', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        type: type,
+                        title: title,
+                        parameters: parameters,
+                        reasoning: reasoning,
+                        priority: priority
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`✅ Proposal created: ${result.approval_id}\n\nThis will be executed after final confirmation.`);
+                    // Reload suggestions
+                    loadCampaigns();
+                } else {
+                    alert(`❌ Failed: ${result.error}`);
+                }
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
+
+        let currentGA4School = null;
+        let currentKeywordSchool = null;
+
+        async function toggleGA4Analysis(school) {
+            const panel = document.getElementById('ga4-analysis-panel');
+            const title = document.getElementById('ga4-analysis-title');
+            
+            // If clicking same school, toggle off
+            if (panel.style.display === 'block' && currentGA4School === school) {
+                panel.style.display = 'none';
+                currentGA4School = null;
+                return;
+            }
+            
+            // Update school and load
+            currentGA4School = school;
+            const schoolName = school === 'beibei' ? 'Beibei Amigos' : 'Amici Montessori';
+            title.textContent = `📈 ${schoolName} - Google Analytics Intelligence`;
+            panel.style.display = 'block';
+            loadGA4Analysis(school);
+        }
+
+        async function toggleKeywordAnalysis(school) {
+            const panel = document.getElementById('keyword-analysis-panel');
+            const title = document.getElementById('keyword-analysis-title');
+            
+            // If clicking same school, toggle off
+            if (panel.style.display === 'block' && currentKeywordSchool === school) {
+                panel.style.display = 'none';
+                currentKeywordSchool = null;
+                return;
+            }
+            
+            // Update school and load
+            currentKeywordSchool = school;
+            const schoolName = school === 'beibei' ? 'Beibei Amigos' : 'Amici Montessori';
+            title.textContent = `🔍 ${schoolName} - Keyword Intelligence`;
+            panel.style.display = 'block';
+            loadKeywordAnalysis(school);
+        }
+
+        async function loadGA4Analysis(school) {
+            const container = document.getElementById('ga4-analysis-content');
+            const schoolName = school === 'beibei' ? 'Beibei Amigos' : 'Amici Montessori';
+            container.innerHTML = `<div class="loading">Analyzing ${schoolName} Google Analytics data...</div>`;
+            
+            try {
+                const response = await fetch(`/api/ga4/overview?days=30&school=${school}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    let html = '';
+                    
+                    // SEO vs Ads Comparison (BIG CARDS)
+                    const seo = data.seo_vs_ads.seo;
+                    const ads = data.seo_vs_ads.paid_ads;
+                    const winner = data.seo_vs_ads.winner;
+                    
+                    html += `
+                        <div style="margin-bottom: 30px;">
+                            <h3 style="margin-bottom: 20px; font-size: 1.4em;">🏆 SEO vs Paid Ads Showdown</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <!-- SEO Card -->
+                                <div style="padding: 30px; background: linear-gradient(135deg, ${winner === 'SEO' ? '#d1fae5' : '#f0fdf4'} 0%, ${winner === 'SEO' ? '#a7f3d0' : '#dcfce7'} 100%); border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); border: 3px solid ${winner === 'SEO' ? '#10b981' : '#86efac'};">
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 2.5em; margin-bottom: 10px;">${winner === 'SEO' ? '🏆' : '🌱'}</div>
+                                        <div style="font-size: 1.8em; font-weight: 700; color: #047857; margin-bottom: 20px;">SEO (Organic)</div>
+                                        <div style="font-size: 3em; font-weight: 700; color: #064e3b; margin-bottom: 10px;">${seo.sessions}</div>
+                                        <div style="color: #047857; font-weight: 600; margin-bottom: 20px;">Sessions</div>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+                                            <div>
+                                                <div style="font-size: 2em; font-weight: 700; color: #064e3b;">${seo.conversions.toFixed(0)}</div>
+                                                <div style="color: #047857; font-size: 0.85em;">Conversions</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 2em; font-weight: 700; color: #064e3b;">${seo.conv_rate.toFixed(1)}%</div>
+                                                <div style="color: #047857; font-size: 0.85em;">Conv Rate</div>
+                                            </div>
+                                        </div>
+                                        <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 12px;">
+                                            <div style="font-size: 1.3em; font-weight: 700; color: #10b981;">💰 Cost: $0</div>
+                                            <div style="color: #64748b; font-size: 0.9em; margin-top: 5px;">100% FREE Traffic!</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Paid Ads Card -->
+                                <div style="padding: 30px; background: linear-gradient(135deg, ${winner === 'Paid Ads' ? '#fef3c7' : '#fffbeb'} 0%, ${winner === 'Paid Ads' ? '#fde68a' : '#fef3c7'} 100%); border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); border: 3px solid ${winner === 'Paid Ads' ? '#f59e0b' : '#fbbf24'};">
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 2.5em; margin-bottom: 10px;">${winner === 'Paid Ads' ? '🏆' : '💰'}</div>
+                                        <div style="font-size: 1.8em; font-weight: 700; color: #92400e; margin-bottom: 20px;">Paid Ads</div>
+                                        <div style="font-size: 3em; font-weight: 700; color: #78350f; margin-bottom: 10px;">${ads.sessions}</div>
+                                        <div style="color: #92400e; font-weight: 600; margin-bottom: 20px;">Sessions</div>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+                                            <div>
+                                                <div style="font-size: 2em; font-weight: 700; color: #78350f;">${ads.conversions.toFixed(0)}</div>
+                                                <div style="color: #92400e; font-size: 0.85em;">Conversions</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 2em; font-weight: 700; color: #78350f;">${ads.conv_rate.toFixed(1)}%</div>
+                                                <div style="color: #92400e; font-size: 0.85em;">Conv Rate</div>
+                                            </div>
+                                        </div>
+                                        <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 12px;">
+                                            <div style="font-size: 1.3em; font-weight: 700; color: #f59e0b;">💳 Cost: $${ads.cost.toFixed(2)}</div>
+                                            <div style="color: #64748b; font-size: 0.9em; margin-top: 5px;">Cost per session: $${ads.cost_per_session.toFixed(2)}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="text-align: center; margin-top: 20px; padding: 24px; background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); border-radius: 12px;">
+                                <div style="font-size: 1.25em; color: #5b21b6; margin-bottom: 12px;">
+                                    <strong>📊 Performance Summary:</strong>
+                                </div>
+                                <div style="font-size: 1.1em; color: #6d28d9; margin-bottom: 8px;">
+                                    ${winner} brings ${winner === 'SEO' ? (seo.sessions / Math.max(ads.sessions, 1)).toFixed(1) : (ads.sessions / Math.max(seo.sessions, 1)).toFixed(1)}x ${winner === 'SEO' ? 'fewer' : 'more'} sessions
+                                </div>
+                                <div style="font-size: 1em; color: #7c3aed;">
+                                    💰 Paid Ads: $${ads.cost.toFixed(2)} total (${ads.cost_per_session.toFixed(2)}/session) | SEO: $0.00 (FREE!)
+                                </div>
+                                ${ads.conversions > 0 && ads.cost > 0 ? `
+                                <div style="font-size: 1em; color: #7c3aed; margin-top: 8px;">
+                                    💵 Cost per conversion: Paid $${(ads.cost / ads.conversions).toFixed(2)} | SEO ${seo.conversions > 0 ? '$0.00' : 'N/A'}
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Target Area Traffic (Cities)
+                    html += `
+                        <div class="analysis-section">
+                            <h3>📍 Target Area Traffic - Are Ads Reaching the Right Neighborhoods?</h3>
+                            <p style="color: #64748b; margin-bottom: 15px;">Users by city (last 30 days):</p>
+                            <div style="overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); border-bottom: 2px solid #c4b5fd;">
+                                            <th style="padding: 12px; text-align: left;">City</th>
+                                            <th style="padding: 12px; text-align: center;">Target?</th>
+                                            <th style="padding: 12px; text-align: right;">Users</th>
+                                            <th style="padding: 12px; text-align: right;">Sessions</th>
+                                            <th style="padding: 12px; text-align: right;">Conversions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                    `;
+                    
+                    data.cities.forEach(city => {
+                        const targetBadge = city.is_target ? 
+                            '<span style="background: #10b981; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.85em; font-weight: 600;">🎯 TARGET</span>' : 
+                            '<span style="background: #ef4444; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.85em; font-weight: 600;">⚠️ OFF-TARGET</span>';
+                        
+                        html += `
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 12px;"><strong>${city.city}, ${city.region}</strong></td>
+                                <td style="padding: 12px; text-align: center;">${targetBadge}</td>
+                                <td style="padding: 12px; text-align: right;">${city.users}</td>
+                                <td style="padding: 12px; text-align: right;">${city.sessions}</td>
+                                <td style="padding: 12px; text-align: right; font-weight: 700; color: ${city.conversions > 0 ? '#10b981' : '#64748b'};">${city.conversions.toFixed(0)}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Traffic Sources Breakdown
+                    html += `
+                        <div class="analysis-section">
+                            <h3>🚦 Traffic Sources - Where Are Visitors Coming From?</h3>
+                            <div style="overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); border-bottom: 2px solid #c4b5fd;">
+                                            <th style="padding: 12px; text-align: left;">Source / Medium</th>
+                                            <th style="padding: 12px; text-align: center;">Category</th>
+                                            <th style="padding: 12px; text-align: right;">Sessions</th>
+                                            <th style="padding: 12px; text-align: right;">Conversions</th>
+                                            <th style="padding: 12px; text-align: right;">Conv Rate</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                    `;
+                    
+                    data.traffic_sources.forEach(source => {
+                        const categoryColor = 
+                            source.category === 'SEO' ? '#10b981' :
+                            source.category === 'Paid Ads' ? '#f59e0b' :
+                            source.category === 'Direct' ? '#3b82f6' : '#64748b';
+                        
+                        html += `
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 12px;"><strong>${source.source}</strong> / ${source.medium}</td>
+                                <td style="padding: 12px; text-align: center;">
+                                    <span style="background: ${categoryColor}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.85em; font-weight: 600;">
+                                        ${source.category}
+                                    </span>
+                                </td>
+                                <td style="padding: 12px; text-align: right;">${source.sessions}</td>
+                                <td style="padding: 12px; text-align: right;">${source.conversions.toFixed(1)}</td>
+                                <td style="padding: 12px; text-align: right; font-weight: 700; color: ${source.conv_rate >= 2 ? '#10b981' : '#64748b'};">${source.conv_rate.toFixed(1)}%</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = `<div class="loading">❌ Error loading GA4 data: ${data.error}</div>`;
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="loading">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function loadKeywordAnalysis(school) {
+            const container = document.getElementById('keyword-analysis-content');
+            const schoolName = school === 'beibei' ? 'Beibei Amigos' : 'Amici Montessori';
+            container.innerHTML = `<div class="loading">Analyzing ${schoolName} keywords...</div>`;
+            
+            try {
+                const response = await fetch(`/api/keywords/analysis?days=30&school=${school}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    let html = '';
+                    
+                    // Summary
+                    html += `
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                            <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 12px;">
+                                <div style="font-size: 2.5em; font-weight: 700; color: #1e3a8a;">${data.summary.total_keywords}</div>
+                                <div style="color: #64748b; font-weight: 600;">Keywords Bidding On</div>
+                            </div>
+                            <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px;">
+                                <div style="font-size: 2.5em; font-weight: 700; color: #92400e;">${data.summary.missed_opportunities}</div>
+                                <div style="color: #64748b; font-weight: 600;">Missed Opportunities</div>
+                            </div>
+                            <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-radius: 12px;">
+                                <div style="font-size: 2.5em; font-weight: 700; color: #991b1b;">${data.summary.wasted_keywords}</div>
+                                <div style="color: #64748b; font-weight: 600;">Wasted Keywords</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Missed Opportunities
+                    if (data.gaps.missed_opportunities.length > 0) {
+                        html += `
+                            <div class="analysis-section">
+                                <h3>🎯 MISSED OPPORTUNITIES - Add These Keywords!</h3>
+                                <p style="color: #64748b; margin-bottom: 15px;">These search terms are converting but you're not bidding on them directly:</p>
+                        `;
+                        
+                        data.gaps.missed_opportunities.forEach(opp => {
+                            html += `
+                                <div style="padding: 15px; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-left: 4px solid #10b981; border-radius: 8px; margin-bottom: 12px;">
+                                    <div style="font-weight: 700; font-size: 1.1em; color: #1a202c; margin-bottom: 5px;">"${opp.search_term}"</div>
+                                    <div style="color: #64748b;">
+                                        Clicks: ${opp.clicks} | Conversions: ${opp.conversions.toFixed(1)} | Conv Rate: ${opp.conv_rate.toFixed(1)}%
+                                    </div>
+                                    <div style="color: #10b981; font-weight: 600; margin-top: 5px;">💡 ${opp.reason}</div>
+                                </div>
+                            `;
+                        });
+                        
+                        html += `</div>`;
+                    }
+                    
+                    // Wasted Keywords
+                    if (data.gaps.wasted_keywords.length > 0) {
+                        html += `
+                            <div class="analysis-section">
+                                <h3>🗑️ WASTED KEYWORDS - Remove These!</h3>
+                                <p style="color: #64748b; margin-bottom: 15px;">You're bidding on these but getting no searches:</p>
+                        `;
+                        
+                        data.gaps.wasted_keywords.forEach(waste => {
+                            html += `
+                                <div style="padding: 15px; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-left: 4px solid #ef4444; border-radius: 8px; margin-bottom: 12px;">
+                                    <div style="font-weight: 700; font-size: 1.1em; color: #1a202c; margin-bottom: 5px;">"${waste.keyword}"</div>
+                                    <div style="color: #64748b;">
+                                        Cost: $${waste.cost.toFixed(2)} wasted | Quality Score: ${waste.quality_score || 'N/A'}/10
+                                    </div>
+                                    <div style="color: #ef4444; font-weight: 600; margin-top: 5px;">⚠️ ${waste.reason}</div>
+                                </div>
+                            `;
+                        });
+                        
+                        html += `</div>`;
+                    }
+                    
+                    // Top Google Ads Keywords
+                    html += `
+                        <div class="analysis-section">
+                            <h3>💰 Top Google Ads Keywords (by cost)</h3>
+                            <p style="color: #64748b; margin-bottom: 15px;">What you're currently paying for:</p>
+                            <div style="overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); border-bottom: 2px solid #c4b5fd;">
+                                            <th style="padding: 12px; text-align: left;">Keyword</th>
+                                            <th style="padding: 12px; text-align: center;">QS</th>
+                                            <th style="padding: 12px; text-align: right;">Cost</th>
+                                            <th style="padding: 12px; text-align: right;">Clicks</th>
+                                            <th style="padding: 12px; text-align: right;">Conv</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                    `;
+                    
+                    data.ads_keywords.slice(0, 10).forEach(kw => {
+                        const qsColor = kw.quality_score >= 7 ? '#10b981' : kw.quality_score >= 5 ? '#f59e0b' : '#ef4444';
+                        html += `
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 12px;"><strong>"${kw.keyword}"</strong> <span style="color: #64748b; font-size: 0.85em;">(${kw.match_type})</span></td>
+                                <td style="padding: 12px; text-align: center; color: ${qsColor}; font-weight: 700;">${kw.quality_score || 'N/A'}</td>
+                                <td style="padding: 12px; text-align: right;">$${kw.cost.toFixed(2)}</td>
+                                <td style="padding: 12px; text-align: right;">${kw.clicks}</td>
+                                <td style="padding: 12px; text-align: right;">${kw.conversions.toFixed(1)}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Top Search Terms
+                    html += `
+                        <div class="analysis-section">
+                            <h3>🔎 Top Search Terms (what people actually searched)</h3>
+                            <p style="color: #64748b; margin-bottom: 15px;">Actual searches that triggered your ads:</p>
+                            <div style="overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); border-bottom: 2px solid #c4b5fd;">
+                                            <th style="padding: 12px; text-align: left;">Search Term</th>
+                                            <th style="padding: 12px; text-align: right;">Impressions</th>
+                                            <th style="padding: 12px; text-align: right;">Clicks</th>
+                                            <th style="padding: 12px; text-align: right;">Conv</th>
+                                            <th style="padding: 12px; text-align: right;">Conv Rate</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                    `;
+                    
+                    data.search_terms.slice(0, 10).forEach(term => {
+                        const convRateColor = term.conv_rate >= 10 ? '#10b981' : term.conv_rate >= 5 ? '#f59e0b' : '#64748b';
+                        html += `
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 12px;"><strong>"${term.search_term}"</strong></td>
+                                <td style="padding: 12px; text-align: right;">${term.impressions}</td>
+                                <td style="padding: 12px; text-align: right;">${term.clicks}</td>
+                                <td style="padding: 12px; text-align: right;">${term.conversions.toFixed(1)}</td>
+                                <td style="padding: 12px; text-align: right; color: ${convRateColor}; font-weight: 700;">${term.conv_rate.toFixed(1)}%</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = `<div class="loading">❌ Error loading keyword analysis: ${data.error}</div>`;
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="loading">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Initial load
+        loadCampaigns();
+
+        // Auto-refresh every 60 seconds
+        setInterval(loadCampaigns, 60000);
+    </script>
+</body>
+</html>

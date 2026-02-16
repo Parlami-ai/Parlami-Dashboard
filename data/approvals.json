@@ -1,0 +1,35 @@
+[
+  {
+    "alert_id": "beibei-annunci-4821",
+    "fix_action": "pause_campaign",
+    "school": "beibei",
+    "campaign": "Beibei PMax - Enrollment",
+    "description": "Pause the campaign immediately to stop wasting budget",
+    "estimated_impact": "Save ~$1248/month",
+    "approved_by": "client",
+    "timestamp": "2025-02-14T15:32:00Z",
+    "status": "approved"
+  },
+  {
+    "alert_id": "amici-bussola-7293",
+    "fix_action": "verify_tracking",
+    "school": "amici",
+    "campaign": "",
+    "description": "Run conversion tracking audit — check GTM tags and form events",
+    "estimated_impact": "Critical — all optimization depends on accurate data",
+    "approved_by": "client",
+    "timestamp": "2025-02-13T09:15:00Z",
+    "status": "approved"
+  },
+  {
+    "alert_id": "beibei-zona-1456",
+    "fix_action": "submit_indexing",
+    "school": "beibei",
+    "campaign": "",
+    "description": "Submit all 9 deindexed community pages to Search Console",
+    "estimated_impact": "Recover ~$720/month in organic traffic value",
+    "approved_by": "client",
+    "timestamp": "2025-02-12T11:45:00Z",
+    "status": "approved"
+  }
+]

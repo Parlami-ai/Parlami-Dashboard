@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ads Architect Dashboard - PARLAMI.AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            border: 1px solid #334155;
+        }
+
+        .card h2 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .stat {
+            margin-bottom: 15px;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .stat-value.success {
+            color: #22c55e;
+        }
+
+        .stat-value.warning {
+            color: #f59e0b;
+        }
+
+        .stat-value.danger {
+            color: #ef4444;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e 0%, #10b981 100%);
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .progress-fill.danger {
+            background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .mutation-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .mutation-item {
+            padding: 15px;
+            background: #0f172a;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #334155;
+        }
+
+        .mutation-item.success {
+            border-left-color: #22c55e;
+        }
+
+        .mutation-item.failure {
+            border-left-color: #ef4444;
+        }
+
+        .mutation-time {
+            color: #64748b;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+
+        .mutation-action {
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 5px;
+        }
+
+        .mutation-message {
+            color: #94a3b8;
+            font-size: 0.9em;
+        }
+
+        .cost-impact {
+            display: inline-block;
+            background: #22c55e;
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge.active {
+            background: #22c55e;
+            color: #fff;
+        }
+
+        .badge.mock {
+            background: #f59e0b;
+            color: #fff;
+        }
+
+        .badge.dry-run {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .refresh-btn {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        .error {
+            background: #7f1d1d;
+            color: #fca5a5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Ads Architect Dashboard</h1>
+            <p class="subtitle">Real-time monitoring & safety controls</p>
+        </header>
+
+        <div id="error-container"></div>
+
+        <div class="grid">
+            <!-- Daily Status -->
+            <div class="card">
+                <h2>📊 Daily Status</h2>
+                <div class="stat">
+                    <div class="stat-label">Mutations Today</div>
+                    <div class="stat-value" id="mutations-today">-</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Remaining Budget</div>
+                    <div class="stat-value success" id="remaining-budget">-</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="daily-progress" style="width: 0%"></div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <span class="badge" id="mode-badge">-</span>
+                </div>
+            </div>
+
+            <!-- 30-Day Summary -->
+            <div class="card">
+                <h2>📈 30-Day Summary</h2>
+                <div class="stat">
+                    <div class="stat-label">Total Mutations</div>
+                    <div class="stat-value" id="total-mutations">-</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Success Rate</div>
+                    <div class="stat-value success" id="success-rate">-</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Cost Impact</div>
+                    <div class="stat-value" id="cost-impact">-</div>
+                </div>
+            </div>
+
+            <!-- System Health -->
+            <div class="card">
+                <h2>🛡️ System Health</h2>
+                <div class="stat">
+                    <div class="stat-label">Recent Backups</div>
+                    <div class="stat-value" id="backup-count">-</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Audit Logs</div>
+                    <div class="stat-value success" id="audit-status">Active</div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="refresh-btn" onclick="loadAllData()">
+                        🔄 Refresh Data
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Mutations -->
+        <div class="card">
+            <h2>🔧 Recent Mutations</h2>
+            <div id="mutations-list" class="mutation-list">
+                <div class="loading pulse">Loading mutations...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh every 30 seconds
+        let autoRefreshInterval;
+
+        async function loadAllData() {
+            try {
+                await Promise.all([
+                    loadDailyStatus(),
+                    loadSummary(),
+                    loadRecentMutations(),
+                    loadBackups()
+                ]);
+                clearError();
+            } catch (error) {
+                showError('Failed to load data: ' + error.message);
+            }
+        }
+
+        async function loadDailyStatus() {
+            const response = await fetch('/api/mutations/today');
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('mutations-today').textContent = data.count;
+                document.getElementById('remaining-budget').textContent = data.remaining;
+                
+                const percentage = (data.count / data.limit) * 100;
+                const progressBar = document.getElementById('daily-progress');
+                progressBar.style.width = percentage + '%';
+                
+                // Update color based on usage
+                progressBar.className = 'progress-fill';
+                if (percentage >= 80) {
+                    progressBar.classList.add('danger');
+                } else if (percentage >= 50) {
+                    progressBar.classList.add('warning');
+                }
+            }
+        }
+
+        async function loadSummary() {
+            const response = await fetch('/api/summary?days=30');
+            const data = await response.json();
+            
+            if (data.success) {
+                const summary = data.summary;
+                document.getElementById('total-mutations').textContent = summary.total_mutations;
+                document.getElementById('success-rate').textContent = summary.success_rate;
+                document.getElementById('cost-impact').textContent = '$' + summary.total_cost_impact.toFixed(2);
+            }
+        }
+
+        async function loadRecentMutations() {
+            const response = await fetch('/api/mutations/recent?limit=20');
+            const data = await response.json();
+            
+            if (data.success) {
+                const listElement = document.getElementById('mutations-list');
+                
+                if (data.mutations.length === 0) {
+                    listElement.innerHTML = '<div class="loading">No mutations yet</div>';
+                    return;
+                }
+                
+                listElement.innerHTML = data.mutations.map(mutation => {
+                    const success = mutation.result.success;
+                    const timestamp = new Date(mutation.timestamp).toLocaleString();
+                    const costImpact = mutation.cost_impact_monthly ? 
+                        `<span class="cost-impact">$${mutation.cost_impact_monthly.toFixed(2)}/mo</span>` : '';
+                    
+                    return `
+                        <div class="mutation-item ${success ? 'success' : 'failure'}">
+                            <div class="mutation-time">${timestamp}</div>
+                            <div class="mutation-action">
+                                ${success ? '✅' : '❌'} ${mutation.action}
+                                ${costImpact}
+                            </div>
+                            <div class="mutation-message">${mutation.result.message || ''}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        async function loadBackups() {
+            const response = await fetch('/api/backups?limit=5');
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('backup-count').textContent = data.count;
+            }
+        }
+
+        async function loadStatus() {
+            const response = await fetch('/api/status');
+            const data = await response.json();
+            
+            if (data.success) {
+                const status = data.status;
+                const modeBadge = document.getElementById('mode-badge');
+                
+                if (status.dry_run_mode) {
+                    modeBadge.textContent = 'DRY RUN';
+                    modeBadge.className = 'badge dry-run';
+                } else if (status.mock_mode) {
+                    modeBadge.textContent = 'MOCK MODE';
+                    modeBadge.className = 'badge mock';
+                } else {
+                    modeBadge.textContent = 'LIVE';
+                    modeBadge.className = 'badge active';
+                }
+            }
+        }
+
+        function showError(message) {
+            const container = document.getElementById('error-container');
+            container.innerHTML = `<div class="error">⚠️ ${message}</div>`;
+        }
+
+        function clearError() {
+            document.getElementById('error-container').innerHTML = '';
+        }
+
+        // Initial load
+        loadAllData();
+        loadStatus();
+
+        // Auto-refresh every 30 seconds
+        autoRefreshInterval = setInterval(loadAllData, 30000);
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            clearInterval(autoRefreshInterval);
+        });
+    </script>
+</body>
+</html>

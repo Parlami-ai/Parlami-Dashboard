@@ -1,0 +1,78 @@
+{
+  "annunci": {
+    "date": "2025-02-16",
+    "severity": "red",
+    "spend": {
+      "beibei": {"weekly_spend": 487.32, "clicks": 312, "conversions": 3, "cpa": 162.44, "ctr": 4.2},
+      "amici": {"weekly_spend": 523.18, "clicks": 289, "conversions": 2, "cpa": 261.59, "ctr": 3.1}
+    },
+    "alerts": [
+      {"level": "red", "school": "beibei", "finding": "Beibei PMax campaign spent $312 with zero conversions in 7 days", "impact_dollars": 312, "assigned_to": "annunci"},
+      {"level": "red", "school": "amici", "finding": "Conversions collapsed 96% week-over-week across all Amici campaigns", "impact_dollars": 480, "assigned_to": "bussola"},
+      {"level": "green", "school": "beibei", "finding": "Beibei brand campaign: CPA $22, excellent performance", "impact_dollars": 0, "assigned_to": "annunci"}
+    ],
+    "campaign_breakdown": {
+      "beibei": [
+        {"name": "Beibei PMax - Enrollment", "spend": 312, "clicks": 180, "conversions": 0, "cpa": 0, "ctr": 3.8},
+        {"name": "Beibei Brand Search", "spend": 175.32, "clicks": 132, "conversions": 3, "cpa": 22, "ctr": 8.1}
+      ],
+      "amici": [
+        {"name": "Amici PMax - Tours", "spend": 345.18, "clicks": 198, "conversions": 1, "cpa": 345.18, "ctr": 2.9},
+        {"name": "Amici Brand Search", "spend": 178, "clicks": 91, "conversions": 1, "cpa": 178, "ctr": 5.2}
+      ]
+    }
+  },
+  "spia": {
+    "date": "2025-02-16",
+    "severity": "yellow",
+    "keywords": {
+      "beibei": [
+        {"keyword": "chinese preschool phoenix", "position": 4, "clicks": 45, "impressions": 890},
+        {"keyword": "mandarin immersion preschool", "position": 6, "clicks": 28, "impressions": 620},
+        {"keyword": "bilingual preschool phoenix", "position": 8, "clicks": 18, "impressions": 450}
+      ],
+      "amici": [
+        {"keyword": "montessori preschool phoenix", "position": 3, "clicks": 62, "impressions": 1240},
+        {"keyword": "preschool chandler az", "position": 5, "clicks": 34, "impressions": 780},
+        {"keyword": "montessori near me phoenix", "position": 7, "clicks": 22, "impressions": 510}
+      ]
+    },
+    "alerts": [
+      {"level": "yellow", "school": "beibei", "finding": "Organic clicks dropped 18% vs last month for 'chinese preschool phoenix'", "impact_dollars": 95, "assigned_to": "spia"},
+      {"level": "green", "school": "amici", "finding": "Amici ranking #3 for 'montessori preschool phoenix' — up from #7", "impact_dollars": 0, "assigned_to": "spia"}
+    ]
+  },
+  "zona": {
+    "date": "2025-02-16",
+    "severity": "yellow",
+    "metrics": {
+      "beibei": {"pages_live": 12, "pages_indexed": 3, "geogrid_score": 4.2},
+      "amici": {"pages_live": 8, "pages_indexed": 6, "geogrid_score": 5.8}
+    },
+    "alerts": [
+      {"level": "yellow", "school": "beibei", "finding": "12 community pages live but only 3 indexed — 75% deindexed", "impact_dollars": 180, "assigned_to": "architetto"},
+      {"level": "yellow", "school": "amici", "finding": "Amici not appearing in Maps for 'preschool near Chandler Blvd'", "impact_dollars": 120, "assigned_to": "zona"}
+    ]
+  },
+  "bussola": {
+    "date": "2025-02-16",
+    "severity": "yellow",
+    "alerts": [
+      {"level": "yellow", "school": "amici", "finding": "Amici bounce rate spiked to 72% on mobile landing pages", "impact_dollars": 200, "assigned_to": "architetto"}
+    ]
+  },
+  "stella": {
+    "date": "2025-02-16",
+    "severity": "green",
+    "alerts": [
+      {"level": "green", "school": "beibei", "finding": "Beibei Amigos: 4.8★ rating maintained, 3 new 5-star reviews this week", "impact_dollars": 0, "assigned_to": "stella"}
+    ]
+  },
+  "architetto": {
+    "date": "2025-02-16",
+    "severity": "green",
+    "alerts": [
+      {"level": "green", "school": "beibei", "finding": "All 24 monitored URLs returning 200 OK — site health excellent", "impact_dollars": 0, "assigned_to": "architetto"}
+    ]
+  }
+}

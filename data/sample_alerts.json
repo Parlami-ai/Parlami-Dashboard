@@ -1,0 +1,92 @@
+[
+  {
+    "agent": "annunci",
+    "level": "red",
+    "school": "beibei",
+    "finding": "Beibei PMax campaign spent $312 with zero conversions in 7 days",
+    "action_required": "Pause campaign and investigate conversion tracking",
+    "impact_dollars": 312,
+    "assigned_to": "annunci"
+  },
+  {
+    "agent": "annunci",
+    "level": "red",
+    "school": "amici",
+    "finding": "Conversions collapsed 96% week-over-week across all Amici campaigns",
+    "action_required": "Run conversion tracking audit with Bussola",
+    "impact_dollars": 480,
+    "assigned_to": "bussola"
+  },
+  {
+    "agent": "zona",
+    "level": "yellow",
+    "school": "beibei",
+    "finding": "12 community pages live but only 3 indexed — 75% deindexed",
+    "action_required": "Submit all community pages to Google Search Console",
+    "impact_dollars": 180,
+    "assigned_to": "architetto"
+  },
+  {
+    "agent": "zona",
+    "level": "yellow",
+    "school": "amici",
+    "finding": "Amici not appearing in Maps for 'preschool near Chandler Blvd'",
+    "action_required": "Optimize Google Business Profile and community pages",
+    "impact_dollars": 120,
+    "assigned_to": "zona"
+  },
+  {
+    "agent": "spia",
+    "level": "yellow",
+    "school": "beibei",
+    "finding": "Organic clicks dropped 18% vs last month for 'chinese preschool phoenix'",
+    "action_required": "Audit affected pages and check SERP changes",
+    "impact_dollars": 95,
+    "assigned_to": "spia"
+  },
+  {
+    "agent": "bussola",
+    "level": "yellow",
+    "school": "amici",
+    "finding": "Amici bounce rate spiked to 72% on mobile landing pages",
+    "action_required": "Optimize mobile UX and page load time",
+    "impact_dollars": 200,
+    "assigned_to": "architetto"
+  },
+  {
+    "agent": "stella",
+    "level": "green",
+    "school": "beibei",
+    "finding": "Beibei Amigos: 4.8★ rating maintained, 3 new 5-star reviews this week",
+    "action_required": "Continue review generation strategy",
+    "impact_dollars": 0,
+    "assigned_to": "stella"
+  },
+  {
+    "agent": "annunci",
+    "level": "green",
+    "school": "beibei",
+    "finding": "Beibei brand campaign: CPA $22, excellent performance",
+    "action_required": "Consider increasing budget to scale conversions",
+    "impact_dollars": 0,
+    "assigned_to": "annunci"
+  },
+  {
+    "agent": "architetto",
+    "level": "green",
+    "school": "beibei",
+    "finding": "All 24 monitored URLs returning 200 OK — site health excellent",
+    "action_required": "No action needed",
+    "impact_dollars": 0,
+    "assigned_to": "architetto"
+  },
+  {
+    "agent": "spia",
+    "level": "green",
+    "school": "amici",
+    "finding": "Amici ranking #3 for 'montessori preschool phoenix' — up from #7",
+    "action_required": "Continue current SEO strategy",
+    "impact_dollars": 0,
+    "assigned_to": "spia"
+  }
+]

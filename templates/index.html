@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parlami Agent Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #1a1a2e;
+  --card: #16213e;
+  --card-hover: #1a2744;
+  --text: #e0e0e0;
+  --text-dim: #8892a4;
+  --accent: #2563EB;
+  --red: #ef4444;
+  --yellow: #eab308;
+  --green: #22c55e;
+  --border: #2a3a5c;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height:100vh; }
+.container { max-width:1400px; margin:0 auto; padding:20px; }
+h1 { font-family: 'Space Grotesk', sans-serif; font-size:1.8rem; margin-bottom:4px; font-weight:700; letter-spacing:-0.5px; }
+h2 { font-family: 'Space Grotesk', sans-serif; }
+h1 span { color: var(--accent); }
+.subtitle { color: var(--text-dim); font-size:0.9rem; margin-bottom:20px; }
+h2 { font-size:1.3rem; margin:30px 0 15px; color: var(--accent); border-bottom:1px solid var(--border); padding-bottom:8px; }
+
+/* Alert Bar */
+.alert-bar { display:flex; gap:20px; padding:14px 20px; background:var(--card); border-radius:12px; margin-bottom:24px; border:1px solid var(--border); flex-wrap:wrap; align-items:center; }
+.alert-item { display:flex; align-items:center; gap:8px; font-size:1.1rem; font-weight:600; }
+.alert-item.red { color: var(--red); }
+.alert-item.yellow { color: var(--yellow); }
+.alert-item.green { color: var(--green); }
+.alert-bar .spacer { flex:1; }
+.alert-bar .refresh { color:var(--text-dim); font-size:0.8rem; }
+
+/* Alert Cards */
+.alert-cards { display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
+.alert-card { background:var(--card); border-radius:12px; border:1px solid var(--border); overflow:hidden; transition: border-color 0.2s; }
+.alert-card:hover { border-color: rgba(255,255,255,0.15); }
+.alert-card.level-red { border-left: 4px solid var(--red); }
+.alert-card.level-yellow { border-left: 4px solid var(--yellow); }
+.alert-card.level-green { border-left: 4px solid var(--green); }
+.alert-card-header { display:flex; align-items:center; padding:16px 20px; cursor:pointer; gap:12px; flex-wrap:wrap; }
+.alert-card-header:hover { background: var(--card-hover); }
+.alert-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.alert-dot.red { background:var(--red); }
+.alert-dot.yellow { background:var(--yellow); }
+.alert-dot.green { background:var(--green); }
+.alert-school { background:rgba(37,99,235,0.2); color:var(--accent); padding:2px 10px; border-radius:12px; font-size:0.75rem; font-weight:700; text-transform:uppercase; flex-shrink:0; }
+.alert-title { flex:1; font-size:0.9rem; line-height:1.4; min-width:200px; }
+.alert-impact { font-weight:700; font-size:0.9rem; white-space:nowrap; }
+.alert-impact.zero { color:var(--text-dim); }
+.alert-impact.confirmed { color:var(--red); }
+.alert-impact.estimated { color:#f0a030; }
+.alert-actions-header { display:flex; gap:8px; flex-shrink:0; }
+.btn { padding:6px 14px; border-radius:8px; border:none; cursor:pointer; font-size:0.8rem; font-weight:600; transition:all 0.2s; }
+.btn-details { background:rgba(255,255,255,0.08); color:var(--text); }
+.btn-details:hover { background:rgba(255,255,255,0.15); }
+.btn-fix { background:var(--accent); color:#fff; }
+.btn-fix:hover { background:#1d4ed8; transform:translateY(-1px); }
+.btn-dismiss { background:rgba(255,255,255,0.05); color:var(--text-dim); font-size:0.75rem; }
+.btn-dismiss:hover { background:rgba(255,255,255,0.1); }
+.btn-approved { background:rgba(34,197,94,0.2); color:var(--green); cursor:default; }
+
+/* Alert Expanded */
+.alert-card-body { max-height:0; overflow:hidden; transition: max-height 0.4s ease; }
+.alert-card-body.open { max-height:2000px; }
+.alert-card-content { padding:0 20px 20px; }
+.alert-section { margin-bottom:16px; }
+.alert-section-title { display:flex; align-items:center; gap:8px; font-size:0.9rem; font-weight:700; margin-bottom:8px; color:var(--text); }
+.alert-section-icon { font-size:1.1rem; }
+.alert-why { color:var(--text); font-size:0.88rem; line-height:1.6; padding:12px 16px; background:rgba(37,99,235,0.08); border-radius:8px; border-left:3px solid var(--accent); }
+.alert-evidence { list-style:none; padding:0; }
+.alert-evidence li { padding:6px 0 6px 20px; position:relative; font-size:0.85rem; color:var(--text-dim); line-height:1.5; }
+.alert-evidence li::before { content:"•"; position:absolute; left:4px; color:var(--accent); font-weight:700; }
+.alert-fix-list { display:flex; flex-direction:column; gap:10px; }
+.alert-fix-item { display:flex; align-items:center; gap:12px; padding:12px 16px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid var(--border); }
+.fix-number { width:28px; height:28px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; flex-shrink:0; }
+.fix-info { flex:1; }
+.fix-desc { font-size:0.85rem; margin-bottom:2px; }
+.fix-meta { font-size:0.75rem; color:var(--text-dim); }
+.fix-btn { padding:6px 16px; border-radius:8px; border:none; cursor:pointer; font-size:0.78rem; font-weight:600; background:var(--accent); color:#fff; transition:all 0.2s; flex-shrink:0; }
+.fix-btn:hover { background:#1d4ed8; transform:translateY(-1px); }
+.fix-btn.done { background:rgba(34,197,94,0.2); color:var(--green); cursor:default; }
+
+/* Modal */
+.modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; }
+.modal-overlay.active { display:flex; }
+.modal { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:28px; max-width:500px; width:90%; animation: modalIn 0.2s ease; }
+@keyframes modalIn { from { transform:scale(0.95); opacity:0; } to { transform:scale(1); opacity:1; } }
+.modal h3 { font-size:1.1rem; margin-bottom:16px; }
+.modal p { font-size:0.9rem; color:var(--text-dim); line-height:1.6; margin-bottom:8px; }
+.modal .impact-line { color:var(--green); font-weight:700; font-size:1rem; margin:12px 0; }
+.modal .warning-line { color:var(--yellow); font-size:0.85rem; }
+.modal-actions { display:flex; gap:12px; margin-top:20px; justify-content:flex-end; }
+.btn-approve { background:var(--green); color:#000; font-weight:700; padding:10px 24px; border:none; border-radius:8px; cursor:pointer; font-size:0.9rem; }
+.btn-approve:hover { background:#16a34a; }
+.btn-cancel { background:rgba(255,255,255,0.08); color:var(--text); padding:10px 24px; border:none; border-radius:8px; cursor:pointer; font-size:0.9rem; }
+.btn-cancel:hover { background:rgba(255,255,255,0.15); }
+.modal-status { text-align:center; padding:20px 0; font-size:1.1rem; }
+
+/* Agent Grid */
+.agent-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:16px; }
+.agent-card { background:var(--card); border-radius:12px; padding:18px; border:1px solid var(--border); transition: border-color 0.2s; }
+.agent-card:hover { border-color: var(--accent); }
+.agent-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.agent-emoji { font-size:1.8rem; }
+.agent-name { font-size:1.1rem; font-weight:700; }
+.agent-role { color:var(--text-dim); font-size:0.8rem; }
+.agent-status { display:flex; align-items:center; gap:6px; margin:8px 0; font-size:0.85rem; }
+.status-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+.status-dot.ok { background: var(--green); }
+.status-dot.error { background: var(--red); }
+.status-dot.unknown { background: var(--text-dim); }
+.agent-meta { font-size:0.78rem; color:var(--text-dim); margin:4px 0; }
+.agent-stats { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.stat-chip { background:rgba(37,99,235,0.15); color:var(--accent); padding:3px 10px; border-radius:20px; font-size:0.75rem; font-weight:600; }
+.severity-badge { display:inline-block; padding:2px 8px; border-radius:6px; font-size:0.7rem; font-weight:700; text-transform:uppercase; }
+.severity-badge.critical { background:rgba(239,68,68,0.2); color:var(--red); }
+.severity-badge.warning { background:rgba(234,179,8,0.2); color:var(--yellow); }
+.severity-badge.ok, .severity-badge.green { background:rgba(34,197,94,0.2); color:var(--green); }
+
+/* School Metrics */
+.school-grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+@media (max-width:768px) { .school-grid { grid-template-columns:1fr; } }
+.school-card { background:var(--card); border-radius:12px; padding:20px; border:1px solid var(--border); }
+.school-card h3 { font-size:1.1rem; margin-bottom:14px; }
+.metric-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.9rem; }
+.metric-row:last-child { border-bottom:none; }
+.metric-label { color:var(--text-dim); }
+.metric-value { font-weight:700; }
+
+/* Cron Table */
+.cron-table { width:100%; border-collapse:collapse; background:var(--card); border-radius:12px; overflow:hidden; }
+.cron-table th { background:rgba(37,99,235,0.15); color:var(--accent); text-align:left; padding:12px 14px; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; }
+.cron-table td { padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem; }
+.cron-table tr:last-child td { border-bottom:none; }
+.cron-table tr:hover td { background:var(--card-hover); }
+.toggle { position:relative; width:40px; height:22px; }
+.toggle input { opacity:0; width:0; height:0; }
+.toggle .slider { position:absolute; cursor:pointer; top:0;left:0;right:0;bottom:0; background:var(--border); border-radius:22px; transition:0.3s; }
+.toggle .slider:before { content:""; position:absolute; height:16px; width:16px; left:3px; bottom:3px; background:var(--text); border-radius:50%; transition:0.3s; }
+.toggle input:checked + .slider { background:var(--accent); }
+.toggle input:checked + .slider:before { transform:translateX(18px); }
+.status-icon { font-size:1.1rem; }
+
+/* Reports */
+.report-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap:16px; }
+@media (max-width:500px) { .report-grid { grid-template-columns:1fr; } }
+.report-card { background:var(--card); border-radius:12px; padding:18px; border:1px solid var(--border); }
+.report-card h3 { font-size:1rem; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.alert-list { list-style:none; }
+.alert-list li { padding:8px 0; border-bottom:1px solid var(--border); font-size:0.83rem; line-height:1.4; }
+.alert-list li:last-child { border-bottom:none; }
+.alert-level { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
+.alert-level.red { background:var(--red); }
+.alert-level.yellow { background:var(--yellow); }
+.alert-level.green { background:var(--green); }
+
+/* Recent Actions */
+.actions-list { display:flex; flex-direction:column; gap:8px; }
+.action-item { background:var(--card); border-radius:10px; padding:14px 18px; border:1px solid var(--border); display:flex; align-items:center; gap:14px; }
+.action-status { font-size:1.3rem; }
+.action-info { flex:1; }
+.action-desc { font-size:0.88rem; }
+.action-time { font-size:0.75rem; color:var(--text-dim); }
+.action-badge { padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:700; text-transform:uppercase; }
+.action-badge.approved { background:rgba(34,197,94,0.2); color:var(--green); }
+.action-badge.pending { background:rgba(234,179,8,0.2); color:var(--yellow); }
+
+.loading { text-align:center; padding:40px; color:var(--text-dim); }
+.empty-state { text-align:center; padding:30px; color:var(--text-dim); font-size:0.9rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="display:flex;align-items:center;gap:16px"><img src="/static/parlami-logo.png" alt="Parlami.ai" style="height:100px;border-radius:8px"><h1><span>Parlami</span> Agent Dashboard</h1></div>
+  <p class="subtitle">Real-time status for all Parlami AI agents</p>
+
+  <div class="alert-bar" id="alertBar">
+    <div class="loading">Loading alerts...</div>
+  </div>
+
+  <h2>📋 Agent Overview</h2>
+  <div class="agent-grid" id="agentGrid">
+    <div class="loading">Loading agents...</div>
+  </div>
+
+  <h2>🚨 Active Alerts</h2>
+  <div class="alert-cards" id="alertCards">
+    <div class="loading">Loading detailed alerts...</div>
+  </div>
+
+  <h2>🏫 School Performance (7-Day)</h2>
+  <div class="school-grid" id="schoolMetrics">
+    <div class="loading">Loading metrics...</div>
+  </div>
+
+  <h2>⏰ Cron Jobs</h2>
+  <div style="overflow-x:auto; border-radius:12px;">
+    <table class="cron-table" id="cronTable">
+      <thead><tr><th>Name</th><th>Schedule</th><th>Last Run</th><th>Duration</th><th>Status</th><th>Next Run</th><th>Enabled</th></tr></thead>
+      <tbody><tr><td colspan="7" class="loading">Loading...</td></tr></tbody>
+    </table>
+  </div>
+
+  <h2>📝 Latest Reports & Alerts</h2>
+  <div class="report-grid" id="reportGrid">
+    <div class="loading">Loading reports...</div>
+  </div>
+
+  <h2>📋 Recent Actions</h2>
+  <div class="actions-list" id="actionsList">
+    <div class="loading">Loading actions...</div>
+  </div>
+</div>
+
+<!-- Fix Confirmation Modal -->
+<div class="modal-overlay" id="fixModal">
+  <div class="modal" id="fixModalContent">
+    <h3 id="modalTitle">Confirm Fix</h3>
+    <p id="modalDesc"></p>
+    <div class="impact-line" id="modalImpact"></div>
+    <p class="warning-line">⚡ This takes effect immediately.</p>
+    <div class="modal-actions" id="modalActions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-approve" id="modalApproveBtn">✅ Approve</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const AGENTS_META = {
+  annunci: {emoji:'📣',name:'Annunci'}, bussola: {emoji:'📊',name:'Bussola'},
+  spia: {emoji:'🔍',name:'Spia'}, zona: {emoji:'📍',name:'Zona'},
+  stella: {emoji:'⭐',name:'Stella'}, marco: {emoji:'☕',name:'Marco'},
+  architetto: {emoji:'🏥',name:'Architetto'}, penna: {emoji:'✍️',name:'Penna'},
+  piazza: {emoji:'📱',name:'Piazza'}, faccia: {emoji:'👤',name:'Faccia'}, lettera: {emoji:'💌',name:'Lettera'},
+};
+
+let modalOpen = false;
+let expandedAlerts = new Set();
+let approvedFixes = new Set(); // track approved fix keys this session
+
+async function fetchJSON(url) { return (await fetch(url)).json(); }
+
+function renderAlerts(data) {
+  document.getElementById('alertBar').innerHTML = `
+    <div class="alert-item red">🔴 ${data.red} Critical</div>
+    <div class="alert-item yellow">🟡 ${data.yellow} Warning</div>
+    <div class="alert-item green">✅ ${data.green} OK</div>
+    <div class="spacer"></div>
+    <div class="refresh">Auto-refresh: 60s</div>`;
+}
+
+function renderDetailedAlerts(alerts) {
+  const el = document.getElementById('alertCards');
+  if (!alerts.length) { el.innerHTML = '<div class="empty-state">No active alerts 🎉</div>'; return; }
+  el.innerHTML = alerts.map((a, i) => {
+    const isOpen = expandedAlerts.has(a.alert_id);
+    const impactStr = a.impact_monthly > 0 ? `$${a.impact_monthly}/mo` : '';
+    const fixes = (a.fixes || []).map((f, fi) => {
+      const fixKey = `${a.alert_id}-${fi}`;
+      const isDone = approvedFixes.has(fixKey);
+      return `<div class="alert-fix-item">
+        <div class="fix-number">${fi+1}</div>
+        <div class="fix-info">
+          <div class="fix-desc">${f.description}</div>
+          <div class="fix-meta">Agent: ${f.assigned_agent || '?'} · Impact: ${f.estimated_impact || 'TBD'}</div>
+        </div>
+        <button class="fix-btn ${isDone ? 'done' : ''}" ${isDone ? 'disabled' : ''} onclick="openFixModal(${JSON.stringify(a).replace(/"/g,'&quot;')}, ${fi})">
+          ${isDone ? '✅ Done' : 'Fix This →'}
+        </button>
+      </div>`;
+    }).join('');
+
+    return `<div class="alert-card level-${a.level}" data-id="${a.alert_id}">
+      <div class="alert-card-header" onclick="toggleAlert('${a.alert_id}')">
+        <span class="alert-dot ${a.level}"></span>
+        <span class="alert-school">${a.school}</span>
+        <span class="alert-title">${a.title}</span>
+        ${impactStr ? `<span class="alert-impact ${a.impact_type || 'estimated'}">${a.impact_type === 'confirmed' ? '💰 Confirmed waste' : '📈 Est. opportunity'}: ${impactStr}</span>` : '<span class="alert-impact zero"></span>'}
+        <div class="alert-actions-header">
+          <button class="btn btn-details">${isOpen ? 'Hide ▲' : 'View Details ▼'}</button>
+        </div>
+      </div>
+      <div class="alert-card-body ${isOpen ? 'open' : ''}">
+        <div class="alert-card-content">
+          <div class="alert-section">
+            <div class="alert-section-title"><span class="alert-section-icon">💡</span> Why this is happening</div>
+            <div class="alert-why">${a.why}</div>
+          </div>
+          <div class="alert-section">
+            <div class="alert-section-title"><span class="alert-section-icon">📊</span> The evidence</div>
+            <ul class="alert-evidence">${(a.evidence||[]).map(e => `<li>${e}</li>`).join('')}</ul>
+          </div>
+          <div class="alert-section">
+            <div class="alert-section-title"><span class="alert-section-icon">🔧</span> Recommended fixes</div>
+            <div class="alert-fix-list">${fixes}</div>
+          </div>
+          <div style="margin-top:12px; text-align:right;">
+            <button class="btn btn-dismiss" onclick="dismissAlert('${a.alert_id}')">Dismiss</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleAlert(id) {
+  if (expandedAlerts.has(id)) expandedAlerts.delete(id);
+  else expandedAlerts.add(id);
+  // Re-render just the body toggle
+  const card = document.querySelector(`.alert-card[data-id="${id}"]`);
+  if (card) {
+    const body = card.querySelector('.alert-card-body');
+    const btn = card.querySelector('.btn-details');
+    body.classList.toggle('open');
+    btn.textContent = body.classList.contains('open') ? 'Hide ▲' : 'View Details ▼';
+  }
+}
+
+function dismissAlert(id) {
+  const card = document.querySelector(`.alert-card[data-id="${id}"]`);
+  if (card) { card.style.opacity = '0.3'; card.style.pointerEvents = 'none'; }
+}
+
+let pendingFix = null;
+function openFixModal(alert, fixIndex) {
+  const fix = alert.fixes[fixIndex];
+  pendingFix = { alert, fixIndex, fix };
+  const agentMeta = AGENTS_META[fix.assigned_agent] || {emoji:'🤖', name:fix.assigned_agent};
+  document.getElementById('modalTitle').textContent = `${agentMeta.emoji} Confirm: ${fix.description}`;
+  document.getElementById('modalDesc').textContent = `${agentMeta.name} will execute this fix for ${alert.school.toUpperCase()}.`;
+  document.getElementById('modalImpact').textContent = `📈 Estimated impact: ${fix.estimated_impact}`;
+  document.getElementById('modalActions').innerHTML = `
+    <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+    <button class="btn-approve" onclick="approveFix()">✅ Approve</button>`;
+  document.getElementById('fixModal').classList.add('active');
+  modalOpen = true;
+}
+
+function closeModal() {
+  document.getElementById('fixModal').classList.remove('active');
+  modalOpen = false;
+  pendingFix = null;
+}
+
+async function approveFix() {
+  if (!pendingFix) return;
+  const { alert, fixIndex, fix } = pendingFix;
+  const fixKey = `${alert.alert_id}-${fixIndex}`;
+
+  document.getElementById('modalActions').innerHTML = '<div class="modal-status">✅ Fix approved! Executing...</div>';
+
+  try {
+    await fetch('/api/fix', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        alert_id: alert.alert_id,
+        fix_action: fix.action_type,
+        school: alert.school,
+        campaign: fix.campaign || '',
+        description: fix.description,
+        estimated_impact: fix.estimated_impact,
+        approved_by: 'client',
+        timestamp: new Date().toISOString(),
+      })
+    });
+    approvedFixes.add(fixKey);
+    document.getElementById('modalActions').innerHTML = '<div class="modal-status">✅ Done! Fix has been recorded.</div>';
+    setTimeout(() => { closeModal(); loadAll(); }, 1500);
+  } catch(e) {
+    document.getElementById('modalActions').innerHTML = `<div class="modal-status" style="color:var(--red)">❌ Error: ${e.message}</div>
+      <button class="btn-cancel" onclick="closeModal()" style="margin-top:10px">Close</button>`;
+  }
+}
+
+function renderAgents(agents) {
+  document.getElementById('agentGrid').innerHTML = agents.map(a => {
+    const sc = a.lastStatus==='ok'?'ok':a.lastStatus==='error'?'error':'unknown';
+    const sev = a.severity==='critical'?'critical':a.severity==='warning'?'warning':'ok';
+    const stats = Object.entries(a.quickStats||{}).map(([k,v])=>`<span class="stat-chip">${k}: ${v}</span>`).join('');
+    return `<div class="agent-card" style="position:relative">
+      <a href="/agent/${a.id}" style="position:absolute;top:12px;right:14px;font-size:0.72rem;color:var(--accent);text-decoration:none;font-weight:600;opacity:0.8" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8">Meet ${a.name} →</a>
+      <div class="agent-header"><span class="agent-emoji">${a.emoji}</span><div><div class="agent-name">${a.name}</div><div class="agent-role">${a.role}</div></div></div>
+      <div class="agent-status"><span class="status-dot ${sc}"></span>Last run: ${a.lastStatus} — ${a.lastRun} (${a.lastDuration})</div>
+      <div class="agent-meta">📅 Next: ${a.nextRun} &nbsp;|&nbsp; ⏰ ${a.schedule}</div>
+      ${a.severity!=='no data'?`<span class="severity-badge ${sev}">${a.severity}</span>`:''}
+      <div class="agent-stats">${stats}</div></div>`;
+  }).join('');
+}
+
+function renderSchool(data) {
+  function card(name,emoji,d) {
+    const cvr = d.clicks>0?((d.conversions/d.clicks)*100).toFixed(2):'0.00';
+    return `<div class="school-card"><h3>${emoji} ${name}</h3>
+      <div class="metric-row"><span class="metric-label">Ad Spend (7d)</span><span class="metric-value">$${(d.ad_spend_7d||0).toFixed(2)}</span></div>
+      <div class="metric-row"><span class="metric-label">Conversions</span><span class="metric-value">${d.conversions||0}</span></div>
+      <div class="metric-row"><span class="metric-label">CPA</span><span class="metric-value">$${(d.cpa||0).toFixed(2)}</span></div>
+      <div class="metric-row"><span class="metric-label">CVR</span><span class="metric-value">${cvr}%</span></div>
+      <div class="metric-row"><span class="metric-label">Paid Clicks</span><span class="metric-value">${d.clicks||0}</span></div>
+      <div class="metric-row"><span class="metric-label">Organic Clicks</span><span class="metric-value">${d.organic_clicks||0}</span></div></div>`;
+  }
+  document.getElementById('schoolMetrics').innerHTML = card('Beibei Amigos','🐼',data.beibei||{}) + card('Amici Montessori','🏫',data.amici||{});
+}
+
+function renderCron(jobs) {
+  document.querySelector('#cronTable tbody').innerHTML = jobs.map(j => {
+    const icon = j.lastStatus==='ok'?'✅':j.lastStatus==='error'?'❌':'⏳';
+    return `<tr><td>${j.name}</td><td>${j.schedule}</td><td>${j.lastRun}</td><td>${j.lastDuration}</td><td><span class="status-icon">${icon}</span></td><td>${j.nextRun}</td><td><label class="toggle"><input type="checkbox" ${j.enabled?'checked':''}><span class="slider"></span></label></td></tr>`;
+  }).join('');
+}
+
+function renderReports(data) {
+  const el = document.getElementById('reportGrid');
+  const cards = Object.entries(data).map(([id,r]) => {
+    const meta = AGENTS_META[id]||{emoji:'🤖',name:id};
+    const alerts = (r.alerts||[]).map(a => `<li><span class="alert-level ${(a.level||'').toLowerCase()}"></span><strong>${a.school||''}</strong> ${a.finding||''}</li>`).join('');
+    return `<div class="report-card"><h3>${meta.emoji} ${meta.name} <span class="severity-badge ${r.severity==='critical'?'critical':r.severity==='warning'?'warning':'ok'}">${r.severity}</span></h3>
+      <div class="agent-meta">Report date: ${r.date}</div>
+      ${alerts?`<ul class="alert-list">${alerts}</ul>`:'<p style="color:var(--text-dim);font-size:0.85rem">No alerts</p>'}</div>`;
+  }).join('');
+  el.innerHTML = cards || '<p class="loading">No reports found</p>';
+}
+
+function renderActions(approvals) {
+  const el = document.getElementById('actionsList');
+  if (!approvals.length) { el.innerHTML = '<div class="empty-state">No actions taken yet</div>'; return; }
+  el.innerHTML = approvals.slice().reverse().slice(0, 20).map(a => {
+    const status = a.status || 'approved';
+    const badge = status === 'approved' ? 'approved' : 'pending';
+    const icon = status === 'approved' ? '✅' : '⏳';
+    const time = a.timestamp ? new Date(a.timestamp).toLocaleString() : 'Unknown';
+    return `<div class="action-item">
+      <span class="action-status">${icon}</span>
+      <div class="action-info">
+        <div class="action-desc"><strong>${(a.school||'').toUpperCase()}</strong> — ${a.description || a.fix_action}</div>
+        <div class="action-time">${time} · Impact: ${a.estimated_impact || 'TBD'}</div>
+      </div>
+      <span class="action-badge ${badge}">${status}</span>
+    </div>`;
+  }).join('');
+}
+
+async function loadAll() {
+  if (modalOpen) return; // Don't refresh while modal is open
+  const [alerts, detailed, agents, cron, reports, metrics, approvals] = await Promise.all([
+    fetchJSON('/api/alerts'),
+    fetchJSON('/api/alerts/detailed'),
+    fetchJSON('/api/agents'),
+    fetchJSON('/api/cron'),
+    fetchJSON('/api/reports/latest'),
+    fetchJSON('/api/metrics'),
+    fetchJSON('/api/approvals'),
+  ]);
+  renderAlerts(alerts);
+  renderDetailedAlerts(detailed);
+  renderAgents(agents);
+  renderCron(cron);
+  renderReports(reports);
+  renderSchool(metrics);
+  renderActions(approvals);
+}
+
+loadAll();
+setInterval(loadAll, 60000);
+</script>
+</body>
+</html>

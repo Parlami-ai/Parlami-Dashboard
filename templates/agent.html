@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ agent.name }} — Parlami Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #1a1a2e;
+  --card: #16213e;
+  --card-hover: #1a2744;
+  --text: #e0e0e0;
+  --text-dim: #8892a4;
+  --accent: {{ agent.color }};
+  --red: #ef4444;
+  --yellow: #eab308;
+  --green: #22c55e;
+  --border: #2a3a5c;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height:100vh; }
+.container { max-width:900px; margin:0 auto; padding:20px; }
+a { color: var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+
+.top-bar { display:flex; align-items:center; gap:12px; margin-bottom:24px; }
+.top-bar img { height:48px; border-radius:6px; }
+.back-link { font-size:0.9rem; color:var(--text-dim); }
+.back-link:hover { color:var(--text); }
+
+/* Hero */
+.hero { background:var(--card); border-radius:16px; border:1px solid var(--border); padding:32px; display:flex; gap:28px; align-items:center; margin-bottom:20px; flex-wrap:wrap; }
+.avatar { width:100px; height:100px; border-radius:50%; background: var(--accent); display:flex; align-items:center; justify-content:center; font-size:3rem; flex-shrink:0; box-shadow: 0 0 30px rgba(0,0,0,0.3); }
+.hero-info { flex:1; min-width:200px; }
+.hero-name { font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; letter-spacing:-0.5px; }
+.hero-title { color:var(--accent); font-size:1rem; font-weight:600; margin:4px 0; }
+.hero-tagline { color:var(--text-dim); font-size:0.9rem; line-height:1.5; margin-top:6px; }
+.status-badge { display:inline-block; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; text-transform:uppercase; margin-top:8px; }
+.status-badge.active { background:rgba(34,197,94,0.2); color:var(--green); }
+.status-badge.idle { background:rgba(234,179,8,0.2); color:var(--yellow); }
+
+/* Section cards */
+.section { background:var(--card); border-radius:12px; border:1px solid var(--border); padding:24px; margin-bottom:16px; }
+.section h2 { font-family:'Space Grotesk',sans-serif; font-size:1.15rem; color:var(--accent); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.section p { font-size:0.9rem; line-height:1.6; color:var(--text-dim); }
+.section ul { list-style:none; padding:0; }
+.section li { padding:6px 0 6px 20px; position:relative; font-size:0.88rem; color:var(--text); line-height:1.5; }
+.section li::before { content:"•"; position:absolute; left:4px; color:var(--accent); font-weight:700; }
+
+.tool-grid { display:flex; flex-wrap:wrap; gap:10px; }
+.tool-chip { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.05); border:1px solid var(--border); padding:6px 14px; border-radius:20px; font-size:0.82rem; }
+.tool-icon { font-size:1rem; }
+
+.output-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); font-size:0.88rem; }
+.output-item:last-child { border-bottom:none; }
+.output-channel { font-weight:600; color:var(--accent); min-width:140px; }
+.output-freq { color:var(--text-dim); min-width:120px; }
+
+.constraint-item { padding:8px 14px; background:rgba(239,68,68,0.06); border-left:3px solid var(--red); border-radius:0 8px 8px 0; margin-bottom:8px; font-size:0.85rem; line-height:1.5; }
+
+/* Stats grid */
+.stats-grid { display:grid; grid-template-columns: repeat(3,1fr); gap:12px; }
+@media(max-width:600px) { .stats-grid { grid-template-columns:1fr; } }
+.stat-box { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:16px; text-align:center; }
+.stat-value { font-family:'Space Grotesk',sans-serif; font-size:1.5rem; font-weight:700; color:var(--accent); }
+.stat-label { font-size:0.75rem; color:var(--text-dim); margin-top:4px; }
+
+/* Activity */
+.activity-item { display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); font-size:0.85rem; }
+.activity-item:last-child { border-bottom:none; }
+.activity-time { color:var(--text-dim); min-width:130px; flex-shrink:0; font-size:0.78rem; }
+.activity-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); margin-top:5px; flex-shrink:0; }
+
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media(max-width:700px) { .two-col { grid-template-columns:1fr; } .hero { flex-direction:column; text-align:center; } .avatar { margin:0 auto; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="top-bar">
+    <a href="/"><img src="/static/parlami-logo.png" alt="Parlami.ai"></a>
+    <a href="/" class="back-link">← Back to Dashboard</a>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="avatar">{{ agent.emoji }}</div>
+    <div class="hero-info">
+      <div class="hero-name">{{ agent.name }}</div>
+      <div class="hero-title">{{ agent.title }} · {{ agent.title_en }}</div>
+      <div class="hero-tagline">{{ agent.tagline }}</div>
+      <span class="status-badge active" id="statusBadge">● Active</span>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <!-- Identity -->
+    <div class="section">
+      <h2>🪪 Identity & Role</h2>
+      <p style="margin-bottom:8px"><strong>{{ agent.name }}</strong> — {{ agent.title_en }}</p>
+      <p style="margin-bottom:8px">{{ agent.personality }}</p>
+      <p><strong>Specialty:</strong> {{ agent.specialty }}</p>
+    </div>
+
+    <!-- Goals -->
+    <div class="section">
+      <h2>🎯 Goals</h2>
+      <ul>
+        {% for goal in agent.goals %}
+        <li>{{ goal }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Tools -->
+  <div class="section">
+    <h2>🛠️ Capabilities & Tools</h2>
+    <div class="tool-grid" style="margin-bottom:14px">
+      {% for tool in agent.tools %}
+      <div class="tool-chip"><span class="tool-icon">{{ tool.icon }}</span> {{ tool.name }}</div>
+      {% endfor %}
+    </div>
+    <p><strong>Data Sources:</strong> {{ agent.data_sources | join(', ') }}</p>
+  </div>
+
+  <div class="two-col">
+    <!-- Constraints -->
+    <div class="section">
+      <h2>🚧 Constraints</h2>
+      {% for c in agent.constraints %}
+      <div class="constraint-item">{{ c }}</div>
+      {% endfor %}
+    </div>
+
+    <!-- Output -->
+    <div class="section">
+      <h2>📤 Output Format</h2>
+      {% for o in agent.output %}
+      <div class="output-item">
+        <span class="output-channel">{{ o.channel }}</span>
+        <span class="output-freq">{{ o.frequency }}</span>
+        <span>{{ o.type }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Performance Stats -->
+  <div class="section">
+    <h2>📈 Performance Stats</h2>
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-value" id="statRuntime">—</div><div class="stat-label">Avg Runtime</div></div>
+      <div class="stat-box"><div class="stat-value" id="statSuccess">—</div><div class="stat-label">Success Rate</div></div>
+      <div class="stat-box"><div class="stat-value" id="statLastError">—</div><div class="stat-label">Last Error</div></div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="section">
+    <h2>📋 Recent Activity</h2>
+    <div id="activityList"><div style="color:var(--text-dim);font-size:0.85rem">Loading activity...</div></div>
+  </div>
+</div>
+
+<script>
+const agentId = "{{ agent.id }}";
+
+async function loadAgentData() {
+  try {
+    const agents = await (await fetch('/api/agents')).json();
+    const ag = agents.find(a => a.id === agentId);
+    if (ag) {
+      // Status badge
+      const badge = document.getElementById('statusBadge');
+      if (ag.lastStatus === 'ok') { badge.className = 'status-badge active'; badge.textContent = '● Active'; }
+      else if (ag.lastStatus === 'error') { badge.className = 'status-badge idle'; badge.style.background = 'rgba(239,68,68,0.2)'; badge.style.color = '#ef4444'; badge.textContent = '● Error'; }
+      else { badge.className = 'status-badge idle'; badge.textContent = '● Idle'; }
+
+      // Stats
+      document.getElementById('statRuntime').textContent = ag.lastDuration || '—';
+      document.getElementById('statSuccess').textContent = ag.lastStatus === 'ok' ? '✅' : ag.lastStatus === 'error' ? '❌' : '—';
+      document.getElementById('statLastError').textContent = ag.lastStatus === 'error' ? ag.lastRun : 'None';
+    }
+
+    // Recent activity from reports
+    const reports = await (await fetch('/api/reports/latest')).json();
+    const report = reports[agentId];
+    const el = document.getElementById('activityList');
+    if (report && report.alerts && report.alerts.length) {
+      el.innerHTML = report.alerts.slice(0, 5).map(a => `
+        <div class="activity-item">
+          <div class="activity-dot"></div>
+          <div class="activity-time">${report.date || 'Recent'}</div>
+          <div>${a.finding || 'Report generated'} <span style="color:var(--text-dim)">(${a.school || ''})</span></div>
+        </div>`).join('');
+    } else {
+      el.innerHTML = '<div style="color:var(--text-dim);font-size:0.85rem">No recent activity recorded</div>';
+    }
+  } catch(e) {
+    console.error(e);
+  }
+}
+loadAgentData();
+</script>
+</body>
+</html>
