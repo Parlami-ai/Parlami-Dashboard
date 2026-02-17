@@ -727,6 +727,39 @@ def index():
     return render_template("index.html")
 
 
+# --- Spanish routes ---
+
+@app.route("/es")
+def landing_es():
+    return render_template("landing_es.html")
+
+
+@app.route("/es/login", methods=["GET", "POST"])
+def login_es():
+    error = None
+    if request.method == "POST":
+        if request.form["username"] == DASH_USER and request.form["password"] == DASH_PASS:
+            session["logged_in"] = True
+            return redirect(url_for("index_es"))
+        error = "Credenciales inválidas"
+    return render_template("login_es.html", error=error)
+
+
+@app.route("/es/logout")
+def logout_es():
+    session.pop("logged_in", None)
+    return redirect(url_for("login_es"))
+
+
+@app.route("/es/dashboard")
+def index_es():
+    if request.args.get("demo") == "true":
+        return render_template("index_es.html")
+    if not session.get("logged_in"):
+        return redirect(url_for("login_es"))
+    return render_template("index_es.html")
+
+
 @app.route("/api/agents")
 def api_agents():
     cron_jobs = load_cron_jobs()

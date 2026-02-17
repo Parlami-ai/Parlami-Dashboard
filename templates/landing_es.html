@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parlami.ai - Asistente de IA Inteligente para Preescolares</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+            background: #2b2d42;
+        }
+
+        /* Header & Navigation */
+        header {
+            background: rgba(43, 45, 66, 0.98);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo::before {
+            content: "💬";
+            font-size: 32px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: white;
+        }
+
+        .login-btn {
+            background: transparent;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .login-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+            transform: translateY(-2px);
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #2b2d42 0%, #3f4164 100%);
+            padding: 150px 20px 150px;
+            min-height: 1100px;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 50%;
+            top: -250px;
+            right: -250px;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: rgba(34, 211, 238, 0.1);
+            border-radius: 50%;
+            bottom: -200px;
+            left: -200px;
+        }
+
+        .hero-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 60px;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            width: 100%;
+        }
+
+        .hero-content {
+            text-align: left;
+        }
+
+        .hero-iframe {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 65px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            overflow: visible;
+            position: relative;
+        }
+
+        .hero-iframe::before {
+            content: "Demo en Vivo";
+            position: absolute;
+            top: -18px;
+            left: 30px;
+            background: #22d3ee;
+            color: #1a1c2e;
+            padding: 8px 25px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: 700;
+            z-index: 1;
+        }
+
+        .hero-iframe iframe {
+            border-radius: 10px;
+            width: 100%;
+            height: 920px;
+            max-height: 90vh;
+            display: block;
+            min-height: 920px;
+        }
+
+        .hero-badge {
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+            padding: 8px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .hero h1 {
+            font-size: 52px;
+            color: white;
+            margin-bottom: 20px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .hero h1 br + text,
+        .hero h1 span {
+            color: #8b5cf6;
+        }
+
+        .hero p {
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 40px;
+            font-weight: 500;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .cta-primary {
+            background: #8b5cf6;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 18px;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .cta-primary:hover {
+            background: #7c3aed;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .cta-secondary {
+            background: transparent;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 18px;
+            transition: all 0.3s;
+            display: inline-block;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .cta-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+            transform: translateY(-3px);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(0); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(5px); }
+        }
+
+        .features {
+            padding: 80px 20px;
+            background: #1a1c2e;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 42px;
+            color: white;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 60px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px 30px;
+            border-radius: 20px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #8b5cf6, #22d3ee);
+            transform: translateX(-100%);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover::before { transform: translateX(0); }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 15px 40px rgba(139, 92, 246, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .feature-card h3 { font-size: 24px; color: white; margin-bottom: 15px; }
+        .feature-card p { color: rgba(255, 255, 255, 0.7); line-height: 1.8; }
+
+        .demo-section { padding: 80px 20px; background: #2b2d42; }
+
+        .demo-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .demo-content h2 { font-size: 42px; color: white; margin-bottom: 20px; font-weight: 700; }
+        .demo-content p { font-size: 18px; color: rgba(255, 255, 255, 0.7); margin-bottom: 30px; line-height: 1.8; }
+
+        .demo-features { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 40px; }
+
+        .demo-feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .demo-feature::before { content: "✓"; color: #22d3ee; font-weight: 700; font-size: 20px; }
+
+        .demo-frame {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            position: relative;
+            max-width: 700px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .demo-frame::before {
+            content: "Demo en Vivo";
+            position: absolute;
+            top: -15px;
+            left: 30px;
+            background: #22d3ee;
+            color: #1a1c2e;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .demo-frame iframe { width: 100%; height: 700px; border: none; border-radius: 10px; background: white; }
+
+        .dashboard-preview { padding: 80px 20px; background: #1a1c2e; }
+
+        .dashboard-mockup {
+            max-width: 1000px;
+            margin: 60px auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mockup-header {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mockup-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-value { font-size: 32px; font-weight: 700; color: #8b5cf6; }
+        .stat-label { color: rgba(255, 255, 255, 0.7); font-size: 14px; margin-top: 5px; }
+        .stat-change { color: #22d3ee; font-size: 12px; margin-top: 5px; }
+
+        .mockup-table {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .table-header { padding: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-weight: 600; color: white; }
+
+        .table-row {
+            display: grid;
+            grid-template-columns: 2fr 3fr 3fr 1fr;
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .table-row:hover { background: rgba(255, 255, 255, 0.05); }
+
+        .pricing { padding: 80px 20px; background: #2b2d42; }
+
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .pricing-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.2);
+        }
+
+        .pricing-card.featured {
+            transform: scale(1.05);
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3);
+        }
+
+        .pricing-card.featured::before {
+            content: "POPULAR";
+            position: absolute;
+            top: -15px;
+            right: 30px;
+            background: #8b5cf6;
+            color: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .pricing-card h3 { font-size: 28px; color: white; margin-bottom: 10px; }
+        .price { font-size: 48px; font-weight: 700; color: #8b5cf6; margin: 20px 0; }
+        .price span { font-size: 18px; font-weight: 400; color: rgba(255, 255, 255, 0.7); }
+        .price-subtitle { color: rgba(255, 255, 255, 0.7); margin-bottom: 30px; font-style: italic; }
+
+        .pricing-features { list-style: none; margin: 30px 0; text-align: left; }
+
+        .pricing-features li {
+            padding: 10px 0;
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pricing-features li::before { content: "✓"; color: #22d3ee; font-weight: 700; font-size: 18px; }
+
+        .contact-section { padding: 80px 20px; background: #1a1c2e; }
+
+        .contact-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: start;
+        }
+
+        .contact-info h2 { font-size: 42px; color: white; margin-bottom: 20px; font-weight: 700; }
+        .contact-info p { font-size: 18px; color: rgba(255, 255, 255, 0.7); margin-bottom: 30px; line-height: 1.8; }
+        .contact-steps { margin-top: 40px; }
+
+        .contact-step { display: flex; gap: 20px; margin-bottom: 30px; align-items: start; }
+
+        .step-number {
+            background: #8b5cf6;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 { color: white; margin-bottom: 5px; }
+        .step-content p { color: rgba(255, 255, 255, 0.7); font-size: 16px; }
+
+        .contact-form {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-group { margin-bottom: 25px; }
+        .form-group label { display: block; margin-bottom: 8px; color: rgba(255, 255, 255, 0.9); font-weight: 600; }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: 'Quicksand', sans-serif;
+            color: white;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder { color: rgba(255, 255, 255, 0.4); }
+
+        .form-group input:focus,
+        .form-group textarea:focus { outline: none; border-color: #8b5cf6; background: rgba(255, 255, 255, 0.08); }
+
+        .form-group textarea { resize: vertical; min-height: 100px; }
+
+        .form-submit {
+            background: #8b5cf6;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .form-submit:hover {
+            background: #7c3aed;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        footer { background: #1a1a1a; color: white; padding: 60px 20px 30px; }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-brand h3 { font-size: 28px; margin-bottom: 15px; color: #8b5cf6; }
+        .footer-brand p { color: #999; line-height: 1.8; }
+        .footer-section h4 { margin-bottom: 20px; color: white; }
+        .footer-section ul { list-style: none; }
+        .footer-section ul li { margin-bottom: 10px; }
+        .footer-section a { color: #999; text-decoration: none; transition: color 0.3s; }
+        .footer-section a:hover { color: white; }
+        .footer-bottom { text-align: center; padding-top: 30px; border-top: 1px solid #333; color: #666; }
+
+        @media (max-width: 1400px) {
+            .hero-container, .demo-container { max-width: 1200px; }
+            .hero-iframe, .demo-frame { max-width: 600px; }
+        }
+
+        @media (max-width: 1200px) {
+            .hero-iframe { max-width: 500px; }
+            .hero-iframe iframe, .demo-frame iframe { height: 600px; }
+        }
+
+        @media (max-width: 1024px) {
+            .hero-container, .demo-container { grid-template-columns: 1fr; text-align: center; }
+            .hero-content { text-align: center; }
+            .hero-iframe, .demo-frame { max-width: 600px; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero { min-height: auto; padding: 120px 20px 60px; }
+            .hero h1 { font-size: 36px; }
+            .hero p { font-size: 18px; }
+            .cta-buttons { justify-content: center; }
+            .hero-iframe, .demo-frame { max-width: 100%; padding: 15px; }
+            .hero-iframe iframe, .demo-frame iframe { height: 500px; }
+            .features-grid, .contact-container { grid-template-columns: 1fr; }
+            .mockup-stats { grid-template-columns: repeat(2, 1fr); }
+            .footer-content { grid-template-columns: 1fr; text-align: center; }
+        }
+
+        @media (max-width: 480px) {
+            .hero-iframe iframe, .demo-frame iframe { height: 400px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Encabezado -->
+    <header>
+        <nav>
+            <a href="#" class="logo">parlami.ai</a>
+            <div class="nav-links">
+                <a href="#features">Características</a>
+                <a href="#pricing">Precios</a>
+                <a href="#contact">Contacto</a>
+                <a href="/es/dashboard" class="login-btn">Iniciar Sesión</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Sección Hero -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1>Asistente de IA Inteligente<br><span style="color: #8b5cf6;">para Preescolares</span></h1>
+                <p>Convierte a los visitantes curiosos de tu sitio web en visitas reservadas y familias inscritas, sin esfuerzo, con conversaciones impulsadas por IA personalizadas con la información de tu preescolar, manual familiar, tarifas de matrícula y cualquier contenido personalizado que desees incluir.</p>
+                <div class="cta-buttons">
+                    <a href="#contact" class="cta-secondary">Agenda una Demo</a>
+                </div>
+                <div style="margin-top: 30px;">
+                    <h3 style="color: white; font-size: 32px; margin-bottom: 8px;">Míralo en Acción</h3>
+                    <p style="color: rgba(255, 255, 255, 0.8); font-size: 24px;">Prueba nuestro chatbot en vivo de Beibei Amigos Language Preschool y descubre lo fácil que es para los padres obtener las respuestas que necesitan, al instante. Sin más búsquedas en páginas web ni esperas por respuestas de correo electrónico. Nuestro asistente impulsado por IA está creado por un dueño de preescolar, diseñado específicamente para otras escuelas, y asegura que las familias obtengan la información que desean, justo cuando la necesitan.
+¿Listo para mejorar la experiencia de los padres en tu escuela? Suscríbete a Parlami.ai y deja que tu chatbot haga el trabajo por ti.</p>
+                </div>
+            </div>
+            <div class="hero-iframe">
+                <iframe 
+                    src="https://beibeiamigosgpt.onrender.com" 
+                    width="100%" 
+                    height="700" 
+                    style="border: none; border-radius: 10px;" 
+                    title="Asistente Beibei Amigos">
+                </iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Características -->
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title">¿Por Qué Elegir Parlami.ai?</h2>
+            <p class="section-subtitle">Nuestros chatbots inteligentes están diseñados específicamente para preescolares, ayudándote a convertir más consultas en inscripciones.</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <span style="font-size: 48px;">🎯</span>
+                        <h3>Personalizado para Tu Preescolar</h3>
+                    </div>
+                    <p>Entrenado con los materiales de tu escuela, incluyendo el manual familiar, tarifas de matrícula y políticas. Da respuestas precisas que reflejan tus valores.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <span style="font-size: 48px;">🏫</span>
+                        <h3>Impulsa Visitas y Llamadas</h3>
+                    </div>
+                    <p>Guía a las familias del interés a la acción. Facilita que los padres agenden visitas, llamen a la escuela u obtengan información de matrícula directamente.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <span style="font-size: 48px;">😊</span>
+                        <h3>Cálido, Útil y Natural</h3>
+                    </div>
+                    <p>Amigable, comprensivo y profesional, como tu directora de preescolar más acogedora. Los padres se sienten escuchados y seguros de contactarte.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <span style="font-size: 48px;">🔒</span>
+                        <h3>Diseñado para la Privacidad</h3>
+                    </div>
+                    <p>Privacidad y seguridad integradas desde el inicio. Todas las conversaciones están encriptadas y almacenadas de forma segura, sin compartir ni vender datos.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <span style="font-size: 48px;">📊</span>
+                        <h3>Información para Mejores Decisiones</h3>
+                    </div>
+                    <p>Cada conversación registrada en tu panel privado. Ve qué preguntan los padres, rastrea el interés en programas y perfecciona tu marketing.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <span style="font-size: 48px;">🎨</span>
+                        <h3>Totalmente Personalizable para Tu Escuela</h3>
+                    </div>
+                    <p>Hazlo únicamente tuyo: elige la apariencia de tu chatbot, agrega el logo o mascota de tu escuela, incluye un video de bienvenida y personaliza las preguntas sugeridas que ven los padres. El asistente de cada escuela es diferente, reflejando tu identidad y valores únicos.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Vista Previa del Panel -->
+    <section class="dashboard-preview">
+        <div class="container">
+            <h2 class="section-title">Potente Panel de Administración</h2>
+            <p class="section-subtitle">Rastrea conversaciones, analiza consultas de padres y toma decisiones basadas en datos con nuestro panel intuitivo.</p>
+            
+            <div class="dashboard-mockup">
+                <div class="mockup-header">
+                    <div>
+                        <div style="font-weight: 700; color: white; font-size: 24px;">Parlami Dashboard</div>
+                        <div style="color: rgba(255, 255, 255, 0.7);">admin@beibeiamigos.com</div>
+                    </div>
+                    <div style="color: rgba(255, 255, 255, 0.7);">Perfil de administrador</div>
+                </div>
+                
+                <div class="mockup-stats">
+                    <div class="stat-box">
+                        <div class="stat-value">347</div>
+                        <div class="stat-label">Conversaciones Totales</div>
+                        <div class="stat-change">↑ 12%</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">52</div>
+                        <div class="stat-label">Solicitudes de Visita</div>
+                        <div class="stat-change">↑ 8%</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">5</div>
+                        <div class="stat-label">Preguntas Comunes</div>
+                        <div class="stat-change">temas clave</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">89%</div>
+                        <div class="stat-label">Tasa de Resolución</div>
+                        <div class="stat-change">↑ 5%</div>
+                    </div>
+                </div>
+                
+                <div class="mockup-table">
+                    <div class="table-header">Conversaciones Recientes</div>
+                    <div class="table-row" style="font-weight: 600; color: white;">
+                        <div>Fecha/Hora</div>
+                        <div>Pregunta del Usuario</div>
+                        <div>Respuesta</div>
+                        <div>Estado</div>
+                    </div>
+                    <div class="table-row">
+                        <div>15/05/2023 2:45 PM</div>
+                        <div>¿Cuál es la matrícula para niños de 3 años?</div>
+                        <div>Nuestra matrícula para niños de 3 años es $950/mes a tiempo completo...</div>
+                        <div style="color: #22d3ee;">Completo</div>
+                    </div>
+                    <div class="table-row">
+                        <div>15/05/2023 1:30 PM</div>
+                        <div>¿Tienen espacio disponible para otoño?</div>
+                        <div>Sí, tenemos espacios limitados disponibles para nuestro programa de otoño...</div>
+                        <div style="color: #22d3ee;">Completo</div>
+                    </div>
+                    <div class="table-row">
+                        <div>15/05/2023 11:20 AM</div>
+                        <div>¿Qué idiomas enseñan?</div>
+                        <div>Ofrecemos instrucción inmersiva en español y mandarín...</div>
+                        <div style="color: #22d3ee;">Completo</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Precios -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <h2 class="section-title">Precios Simples y Transparentes</h2>
+            <p class="section-subtitle">Todo lo que necesitas para convertir más visitantes del sitio web en familias inscritas.</p>
+            <div class="pricing-cards" style="max-width: 400px; margin: 60px auto 0;">
+                <div class="pricing-card featured">
+                    <h3>Estándar</h3>
+                    <div class="price">$25<span> / mes</span></div>
+                    <p class="price-subtitle">+ $200 tarifa única de configuración</p>
+                    <ul class="pricing-features">
+                        <li>Chatbot con IA entrenado con tus materiales</li>
+                        <li>Personalizado con la información de tu preescolar</li>
+                        <li>Integración responsive para móviles</li>
+                        <li>Panel de analíticas</li>
+                        <li>Seguimiento de conversaciones e insights</li>
+                        <li>Actualizaciones y ajustes gratuitos</li>
+                        <li>Soporte por correo electrónico</li>
+                    </ul>
+                    <a href="#contact" class="cta-primary">Comenzar</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Contacto -->
+    <section class="contact-section" id="contact">
+        <div class="contact-container">
+            <div class="contact-info">
+                <h2>¿Listo para Transformar el Sitio Web de Tu Preescolar?</h2>
+                <p>Hablemos sobre cómo nuestro chatbot con IA puede ayudarte a inscribir más familias y ahorrar tiempo a tu personal.</p>
+                
+                <div class="contact-steps">
+                    <h3 style="color: white; margin-bottom: 30px;">¿Qué sigue?</h3>
+                    <div class="contact-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Te contactaremos en 1 día hábil</h4>
+                            <p>para agendar una demostración personalizada</p>
+                        </div>
+                    </div>
+                    <div class="contact-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Nuestro equipo personalizará un chatbot</h4>
+                            <p>entrenado específicamente con los materiales de tu preescolar</p>
+                        </div>
+                    </div>
+                    <div class="contact-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Te ayudaremos a integrar y optimizar</h4>
+                            <p>el chatbot con tu sitio web para maximizar conversiones</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <form class="contact-form" id="demoForm">
+                <h3 style="color: white; margin-bottom: 30px;">Solicitar una Demo</h3>
+                <div class="form-group">
+                    <label for="name">Tu Nombre</label>
+                    <input type="text" id="name" name="name" required placeholder="María García">
+                </div>
+                <div class="form-group">
+                    <label for="school">Nombre de la Escuela</label>
+                    <input type="text" id="school" name="school" required placeholder="Preescolar Rayitos de Sol">
+                </div>
+                <div class="form-group">
+                    <label for="email">Correo Electrónico</label>
+                    <input type="email" id="email" name="email" required placeholder="maria@preescolarrayitos.com">
+                </div>
+                <div class="form-group">
+                    <label for="phone">Número de Teléfono</label>
+                    <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567">
+                </div>
+                <div class="form-group">
+                    <label for="website">Sitio Web de la Escuela</label>
+                    <input type="url" id="website" name="website" placeholder="https://www.preescolarrayitos.com">
+                </div>
+                <div class="form-group">
+                    <label for="message">Información Adicional</label>
+                    <textarea id="message" name="message" placeholder="Cuéntanos sobre tu escuela y lo que estás buscando..."></textarea>
+                </div>
+                <button type="submit" class="form-submit">Agendar Mi Demo</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Pie de Página -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>parlami.ai</h3>
+                <p>Chatbots inteligentes diseñados específicamente para preescolares, ayudándote a convertir más consultas en inscripciones.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Empresa</h4>
+                <ul>
+                    <li><a href="#">Sobre Nosotros</a></li>
+                    <li><a href="#">Nuestro Equipo</a></li>
+                    <li><a href="#">Carreras</a></li>
+                    <li><a href="#">Política de Privacidad</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Recursos</h4>
+                <ul>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Centro de Soporte</a></li>
+                    <li><a href="#">Casos de Éxito</a></li>
+                    <li><a href="#">Preguntas Frecuentes</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Contacto</h4>
+                <ul>
+                    <li><a href="mailto:info@parlami.ai">info@parlami.ai</a></li>
+                    <li><a href="tel:8005551234">(800) 555-1234</a></li>
+                    <li>123 AI Boulevard</li>
+                    <li>San Francisco, CA 94103</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Parlami.ai. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.style.boxShadow = '0 2px 20px rgba(0,0,0,0.3)';
+                header.style.background = 'rgba(26, 28, 46, 0.98)';
+            } else {
+                header.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+                header.style.background = 'rgba(43, 45, 66, 0.98)';
+            }
+        });
+
+        document.getElementById('demoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            alert('¡Gracias por tu interés! Te contactaremos en 1 día hábil para agendar tu demostración.');
+            this.reset();
+        });
+    </script>
+</body>
+</html>
