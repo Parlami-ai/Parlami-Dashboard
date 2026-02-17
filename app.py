@@ -791,6 +791,9 @@ def api_alerts_detailed():
 @app.route("/api/fix", methods=["POST"])
 def api_fix():
     """Record a fix approval."""
+    # Block in demo mode
+    if request.args.get("demo") == "true" or request.referrer and "demo=true" in request.referrer:
+        return jsonify({"error": "Demo mode — actions disabled", "demo": True}), 403
     data = request.get_json()
     if not data:
         return jsonify({"error": "No JSON body"}), 400

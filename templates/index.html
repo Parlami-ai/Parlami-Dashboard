@@ -176,6 +176,26 @@ h2 { font-size:1.3rem; margin:30px 0 15px; color: var(--accent); border-bottom:1
 </style>
 </head>
 <body>
+<script>
+const isDemo = new URLSearchParams(window.location.search).get('demo') === 'true';
+if (isDemo) {
+  document.addEventListener('DOMContentLoaded', () => {
+    // Add demo banner
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#8b5cf6,#22d3ee);color:#fff;text-align:center;padding:10px 20px;font-weight:600;font-size:14px;letter-spacing:0.5px';
+    banner.innerHTML = '📊 DEMO MODE — You\'re viewing a live preview of the Parlami Agent Dashboard. <a href="https://www.parlami.ai/#contact" style="color:#fff;text-decoration:underline;margin-left:8px">Get Your AI Team →</a>';
+    document.body.prepend(banner);
+    document.body.style.paddingTop = '40px';
+    // Disable all fix buttons
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.fix-btn, .approve-btn, [data-action]')) {
+        e.preventDefault(); e.stopPropagation();
+        alert('This is a demo preview. Contact us at parlami.ai to get your own AI marketing team!');
+      }
+    }, true);
+  });
+}
+</script>
 <div class="container">
   <div style="display:flex;align-items:center;gap:16px"><img src="/static/parlami-logo.png" alt="Parlami.ai" style="height:100px;border-radius:8px"><h1><span>Parlami</span> Agent Dashboard</h1></div>
   <p class="subtitle">Real-time status for all Parlami AI agents</p>
