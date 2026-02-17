@@ -6,9 +6,23 @@ import glob
 import os
 from datetime import datetime, timezone
 from pathlib import Path
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, session, redirect, url_for
+from functools import wraps
 
 app = Flask(__name__, static_folder="static", static_url_path="/static")
+app.secret_key = os.environ.get("SECRET_KEY", "parlami-dev-key-change-me")
+
+DASH_USER = os.environ.get("DASH_USER", "admin")
+DASH_PASS = os.environ.get("DASH_PASS", "changeme")
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get("logged_in"):
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated
 
 # Base directory for this app
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -685,7 +699,25 @@ def landing():
     return render_template("landing.html")
 
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error = None
+    if request.method == "POST":
+        if request.form["username"] == DASH_USER and request.form["password"] == DASH_PASS:
+            session["logged_in"] = True
+            return redirect(url_for("index"))
+        error = "Invalid credentials"
+    return render_template("login.html", error=error)
+
+
+@app.route("/logout")
+def logout():
+    session.pop("logged_in", None)
+    return redirect(url_for("login"))
+
+
 @app.route("/dashboard")
+@login_required
 def index():
     return render_template("index.html")
 
