@@ -1023,9 +1023,16 @@ def demo_request():
     return resp
 
 
+LEADS_API_KEY = os.environ.get("LEADS_API_KEY", "")
+
+
 @app.route("/api/leads")
-@login_required
 def api_leads():
+    # Allow access via session login OR API key
+    key = request.args.get("key") or request.headers.get("X-API-Key")
+    if not session.get("logged_in"):
+        if not LEADS_API_KEY or key != LEADS_API_KEY:
+            return jsonify({"error": "unauthorized"}), 401
     return jsonify(_load_leads())
 
 
