@@ -717,8 +717,13 @@ def logout():
 
 
 @app.route("/dashboard")
-@login_required
 def index():
+    # Demo mode is public (read-only, buttons blocked by JS)
+    if request.args.get("demo") == "true":
+        return render_template("index.html")
+    # Otherwise require login
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
     return render_template("index.html")
 
 
