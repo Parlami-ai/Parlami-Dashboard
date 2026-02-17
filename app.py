@@ -4,8 +4,13 @@
 import json
 import glob
 import os
+import smtplib
+import threading
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.request import Request, urlopen
 from flask import Flask, jsonify, render_template, request, session, redirect, url_for
 from functools import wraps
 
@@ -911,6 +916,117 @@ def api_metrics():
             total_clicks = sum(k.get("clicks", 0) for k in school_kw)
             result[school]["organic_clicks"] = total_clicks
     return jsonify(result)
+
+
+# --- Lead Capture ---
+LEADS_FILE = os.path.join(BASE_DIR, "data", "leads.json")
+DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK_URL", "")
+NOTIFY_EMAIL = os.environ.get("NOTIFY_EMAIL", "")
+GMAIL_USER = os.environ.get("GMAIL_USER", "")
+GMAIL_PASS = os.environ.get("GMAIL_APP_PASSWORD", "")
+
+
+def _load_leads():
+    try:
+        with open(LEADS_FILE) as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def _save_lead(lead):
+    leads = _load_leads()
+    leads.append(lead)
+    os.makedirs(os.path.dirname(LEADS_FILE), exist_ok=True)
+    with open(LEADS_FILE, "w") as f:
+        json.dump(leads, f, indent=2)
+
+
+def _send_discord_webhook(lead):
+    if not DISCORD_WEBHOOK:
+        return
+    try:
+        payload = json.dumps({
+            "embeds": [{
+                "title": "🚀 New Demo Request!",
+                "color": 0x8B5CF6,
+                "fields": [
+                    {"name": "👤 Name", "value": lead.get("name", "N/A"), "inline": True},
+                    {"name": "🏢 Business", "value": lead.get("school", "N/A"), "inline": True},
+                    {"name": "📧 Email", "value": lead.get("email", "N/A"), "inline": True},
+                    {"name": "📞 Phone", "value": lead.get("phone", "N/A") or "Not provided", "inline": True},
+                    {"name": "🌐 Website", "value": lead.get("website", "N/A") or "Not provided", "inline": True},
+                    {"name": "💬 Message", "value": lead.get("message", "N/A") or "Not provided", "inline": False},
+                ],
+                "timestamp": lead.get("timestamp"),
+                "footer": {"text": "Parlami.ai Lead Capture"}
+            }]
+        }).encode()
+        req = Request(DISCORD_WEBHOOK, data=payload, headers={"Content-Type": "application/json"}, method="POST")
+        urlopen(req, timeout=10)
+    except Exception as e:
+        print(f"Discord webhook error: {e}")
+
+
+def _send_email_notification(lead):
+    if not all([NOTIFY_EMAIL, GMAIL_USER, GMAIL_PASS]):
+        return
+    try:
+        msg = MIMEMultipart()
+        msg["From"] = GMAIL_USER
+        msg["To"] = NOTIFY_EMAIL
+        msg["Subject"] = f"🚀 New Parlami Demo Request: {lead.get('name', 'Unknown')}"
+        body = f"""New demo request from parlami.ai!
+
+Name: {lead.get('name', 'N/A')}
+Business: {lead.get('school', 'N/A')}
+Email: {lead.get('email', 'N/A')}
+Phone: {lead.get('phone', 'Not provided')}
+Website: {lead.get('website', 'Not provided')}
+Message: {lead.get('message', 'Not provided')}
+
+Time: {lead.get('timestamp', 'Unknown')}
+"""
+        msg.attach(MIMEText(body, "plain"))
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(GMAIL_USER, GMAIL_PASS)
+            server.send_message(msg)
+    except Exception as e:
+        print(f"Email notification error: {e}")
+
+
+@app.route("/api/demo-request", methods=["POST", "OPTIONS"])
+def demo_request():
+    if request.method == "OPTIONS":
+        resp = app.make_default_options_response()
+        resp.headers["Access-Control-Allow-Origin"] = "*"
+        resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        resp.headers["Access-Control-Allow-Methods"] = "POST"
+        return resp
+    data = request.get_json() or {}
+    lead = {
+        "name": data.get("name", ""),
+        "school": data.get("school", ""),
+        "email": data.get("email", ""),
+        "phone": data.get("phone", ""),
+        "website": data.get("website", ""),
+        "message": data.get("message", ""),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "source": data.get("source", "website"),
+    }
+    _save_lead(lead)
+    # Send notifications in background
+    threading.Thread(target=_send_discord_webhook, args=(lead,), daemon=True).start()
+    threading.Thread(target=_send_email_notification, args=(lead,), daemon=True).start()
+    resp = jsonify({"ok": True, "message": "Thank you! We'll contact you within 1 business day."})
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    return resp
+
+
+@app.route("/api/leads")
+@login_required
+def api_leads():
+    return jsonify(_load_leads())
 
 
 if __name__ == "__main__":
