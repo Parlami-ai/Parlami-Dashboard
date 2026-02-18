@@ -14,6 +14,12 @@ from urllib.request import Request, urlopen
 from flask import Flask, jsonify, render_template, request, session, redirect, url_for
 from functools import wraps
 
+try:
+    import requests as _requests
+    _REQUESTS_AVAILABLE = True
+except ImportError:
+    _REQUESTS_AVAILABLE = False
+
 app = Flask(__name__, static_folder="static", static_url_path="/static")
 app.secret_key = os.environ.get("SECRET_KEY", "parlami-dev-key-change-me")
 
@@ -63,6 +69,76 @@ def _load_sample_cron():
         except Exception:
             _sample_cron = {"jobs": []}
     return _sample_cron
+
+# ─── Supabase Integration ─────────────────────────────────────────────────────
+
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
+SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+_SUPABASE_AVAILABLE = bool(SUPABASE_URL and SUPABASE_SERVICE_KEY and _REQUESTS_AVAILABLE)
+
+
+def _sb_headers():
+    return {
+        "apikey": SUPABASE_SERVICE_KEY,
+        "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+        "Content-Type": "application/json",
+    }
+
+
+def _sb_get(table, params=None, limit=500):
+    """Fetch rows from a Supabase table. Returns list or None on error."""
+    if not _SUPABASE_AVAILABLE:
+        return None
+    try:
+        p = {"limit": limit, **(params or {})}
+        resp = _requests.get(
+            f"{SUPABASE_URL}/rest/v1/{table}",
+            headers=_sb_headers(),
+            params=p,
+            timeout=10,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            return data if isinstance(data, list) else None
+        return None
+    except Exception:
+        return None
+
+
+def _sb_upsert(table, data):
+    """Upsert a row or list of rows into a Supabase table."""
+    if not _SUPABASE_AVAILABLE:
+        return None
+    try:
+        headers = {
+            **_sb_headers(),
+            "Prefer": "resolution=merge-duplicates,return=representation",
+        }
+        payload = data if isinstance(data, list) else [data]
+        resp = _requests.post(
+            f"{SUPABASE_URL}/rest/v1/{table}",
+            headers=headers,
+            json=payload,
+            timeout=10,
+        )
+        if resp.status_code in (200, 201):
+            return resp.json()
+        return None
+    except Exception:
+        return None
+
+
+def _parse_json_field(val):
+    """Parse a JSON string field that Supabase may return as str or already parsed."""
+    if val is None:
+        return None
+    if isinstance(val, (dict, list)):
+        return val
+    try:
+        return json.loads(val)
+    except Exception:
+        return val
+
 
 AGENT_PROFILES = {
     "marco": {
@@ -814,6 +890,32 @@ def api_cron():
 @app.route("/api/reports/latest")
 def api_reports():
     result = {}
+
+    # Try Supabase first — get latest report per agent
+    if _SUPABASE_AVAILABLE:
+        sb_reports = _sb_get(
+            "parlami_reports",
+            params={"order": "date.desc", "limit": "50"},
+        )
+        if sb_reports:
+            for row in sb_reports:
+                agent = row.get("agent", "")
+                # Only take the latest row per agent (list is sorted desc by date)
+                if agent and agent not in result:
+                    result[agent] = {
+                        "date": row.get("date", "unknown"),
+                        "severity": row.get("severity", "unknown"),
+                        "alerts": _parse_json_field(row.get("alerts")) or [],
+                        "metrics": _parse_json_field(row.get("metrics")) or {},
+                        "summary": row.get("summary", ""),
+                        "agent": agent,
+                        "client_slug": row.get("client_slug"),
+                        "source": "supabase",
+                    }
+            if result:
+                return jsonify(result)
+
+    # Fallback: read from report files
     for ag in AGENTS:
         report = find_latest_report(ag["id"])
         if report:
@@ -831,6 +933,19 @@ def api_reports():
 
 @app.route("/api/alerts")
 def api_alerts():
+    # Try Supabase first
+    if _SUPABASE_AVAILABLE:
+        sb_alerts = _sb_get(
+            "parlami_alerts",
+            params={"status": "eq.active", "order": "created_at.desc", "limit": "200"},
+        )
+        if sb_alerts is not None:
+            red = sum(1 for a in sb_alerts if a.get("level") == "red")
+            yellow = sum(1 for a in sb_alerts if a.get("level") == "yellow")
+            green = sum(1 for a in sb_alerts if a.get("level") == "green")
+            return jsonify({"red": red, "yellow": yellow, "green": green, "alerts": sb_alerts, "source": "supabase"})
+
+    # Fallback to report files
     red = yellow = green = 0
     all_alerts = []
     for ag in AGENTS:
@@ -849,6 +964,23 @@ def api_alerts():
 @app.route("/api/alerts/detailed")
 def api_alerts_detailed():
     """Return enriched alerts with why/evidence/fixes."""
+    # Try Supabase first
+    if _SUPABASE_AVAILABLE:
+        sb_alerts = _sb_get(
+            "parlami_alerts",
+            params={"status": "eq.active", "order": "created_at.desc", "limit": "200"},
+        )
+        if sb_alerts is not None:
+            # Parse JSON fields that may be stored as strings
+            for alert in sb_alerts:
+                alert["evidence"] = _parse_json_field(alert.get("evidence")) or []
+                alert["fixes"] = _parse_json_field(alert.get("fixes")) or []
+            # Sort: red first, then yellow, then green; within level by impact desc
+            order = {"red": 0, "yellow": 1, "green": 2}
+            sb_alerts.sort(key=lambda a: (order.get(a.get("level", ""), 3), -(a.get("impact_monthly") or 0)))
+            return jsonify(sb_alerts)
+
+    # Fallback: enrich from report files
     all_alerts = []
     for ag in AGENTS:
         report = find_latest_report(ag["id"])
@@ -857,7 +989,6 @@ def api_alerts_detailed():
         for alert in report.get("alerts", []):
             enriched = enrich_alert(alert, ag["id"], report)
             all_alerts.append(enriched)
-    # Sort: red first, then yellow, then green
     order = {"red": 0, "yellow": 1, "green": 2}
     all_alerts.sort(key=lambda a: (order.get(a["level"], 3), -a.get("impact_monthly", 0)))
     return jsonify(all_alerts)
@@ -884,20 +1015,103 @@ def api_fix():
         "status": "approved",
     }
     save_approval(approval)
+
+    # Also write to Supabase parlami_actions table
+    if _SUPABASE_AVAILABLE:
+        try:
+            action_row = {
+                "alert_id": approval.get("alert_id", ""),
+                "client_slug": approval.get("school", "unknown"),
+                "school": approval.get("school", "unknown"),
+                "agent": approval.get("fix_action", "manual"),
+                "action_type": approval.get("fix_action", "manual_review"),
+                "description": approval.get("description", ""),
+                "estimated_impact": approval.get("estimated_impact", ""),
+                "status": "approved",
+                "approved_by": approval.get("approved_by", "client"),
+                "result": json.dumps({"campaign": approval.get("campaign", ""), "timestamp": approval.get("timestamp")}),
+            }
+            _sb_upsert("parlami_actions", action_row)
+        except Exception as e:
+            pass  # Non-fatal — local file already saved
+
     return jsonify({"success": True, "approval": approval})
 
 
 @app.route("/api/approvals")
 def api_approvals():
-    """Return all approvals."""
+    """Return all approvals — from Supabase if available, else local file."""
+    if _SUPABASE_AVAILABLE:
+        sb_actions = _sb_get(
+            "parlami_actions",
+            params={"order": "created_at.desc", "limit": "200"},
+        )
+        if sb_actions is not None:
+            # Parse any JSON fields
+            for action in sb_actions:
+                action["result"] = _parse_json_field(action.get("result"))
+            return jsonify(sb_actions)
+
+    # Fallback to local file
     return jsonify(load_approvals())
 
 
 @app.route("/api/metrics")
 def api_metrics():
+    # Try Supabase first — get latest row per client
+    result = {"beibei": {}, "amici": {}}
+    sb_data = None
+    if _SUPABASE_AVAILABLE:
+        try:
+            # Fetch latest row per client from parlami_metrics
+            sb_data = _sb_get(
+                "parlami_metrics",
+                params={"order": "date.desc", "limit": "10"},
+            )
+        except Exception:
+            sb_data = None
+
+    if sb_data:
+        # Group by client_slug — take latest per client
+        client_rows = {}
+        for row in sb_data:
+            slug = row.get("client_slug")
+            if slug and slug not in client_rows:
+                client_rows[slug] = row
+        for slug, row in client_rows.items():
+            if slug in result:
+                result[slug].update({
+                    "sessions": row.get("sessions", 0),
+                    "active_users": row.get("active_users", 0),
+                    "new_users": row.get("new_users", 0),
+                    "conversions": row.get("conversions", 0),
+                    "bounce_rate": row.get("bounce_rate"),
+                    "avg_session_duration": row.get("avg_session_duration"),
+                    "page_views": row.get("page_views", 0),
+                    "conversion_rate": row.get("conversion_rate"),
+                    "sessions_wow_change": row.get("sessions_wow_change"),
+                    "date": row.get("date"),
+                    "top_sources": _parse_json_field(row.get("top_sources")),
+                    "device_breakdown": _parse_json_field(row.get("device_breakdown")),
+                    "source": "supabase",
+                })
+        # Also merge ad data from annunci report if available
+        annunci = find_latest_report("annunci")
+        if annunci:
+            spend = annunci.get("spend", {})
+            for school in ["beibei", "amici"]:
+                s = spend.get(school, {})
+                result[school].update({
+                    "ad_spend_7d": s.get("weekly_spend", 0),
+                    "clicks": s.get("clicks", 0),
+                    "cpa": s.get("cpa", 0),
+                    "ctr": s.get("ctr", 0),
+                })
+        return jsonify(result)
+
+    # Fallback to sample/report data
     annunci = find_latest_report("annunci")
     spia = find_latest_report("spia")
-    result = {"beibei": {}, "amici": {}}
     if annunci:
         spend = annunci.get("spend", {})
         for school in ["beibei", "amici"]:
