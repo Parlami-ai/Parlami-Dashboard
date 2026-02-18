@@ -843,26 +843,61 @@ def index_es():
 
 @app.route("/api/agents")
 def api_agents():
+    # Try Supabase for latest report data per agent
+    sb_reports_by_agent = {}
+    if _SUPABASE_AVAILABLE:
+        sb_reports = _sb_get(
+            "parlami_reports",
+            params={"order": "created_at.desc", "limit": "50"},
+        )
+        if sb_reports:
+            for r in sb_reports:
+                agent = r.get("agent", "")
+                if agent not in sb_reports_by_agent:
+                    sb_reports_by_agent[agent] = r
+
     cron_jobs = load_cron_jobs()
     cron_map = {j["name"]: j for j in cron_jobs}
     result = []
     for ag in AGENTS:
         cj = cron_map.get(ag["cron_name"], {})
         state = cj.get("state", {})
-        report = find_latest_report(ag["id"])
+
+        # Prefer Supabase data for last run info
+        sb_report = sb_reports_by_agent.get(ag["id"])
+        if sb_report:
+            last_run = sb_report.get("created_at", "")
+            if last_run:
+                # Format: "2026-02-18T17:59:35" → "2026-02-18 17:59 UTC"
+                last_run = last_run[:16].replace("T", " ") + " UTC"
+            severity = sb_report.get("severity", "unknown")
+            last_status = "ok"
+            summary = sb_report.get("summary", {})
+            quick_stats = {}
+            if isinstance(summary, dict):
+                for k, v in list(summary.items())[:3]:
+                    if isinstance(v, (int, float, str)):
+                        quick_stats[k.replace("_", " ").title()] = v
+        else:
+            report = find_latest_report(ag["id"])
+            last_run = ms_to_str(state.get("lastRunAtMs"))
+            last_status = state.get("lastStatus", "unknown")
+            severity = report.get("severity", "unknown") if report else "no data"
+            quick_stats = extract_quick_stats(ag["id"], report)
+
         result.append({
             "id": ag["id"],
             "emoji": ag["emoji"],
             "name": ag["name"],
             "role": ag["role"],
             "schedule": ag["schedule"],
-            "enabled": cj.get("enabled", False),
-            "lastRun": ms_to_str(state.get("lastRunAtMs")),
-            "lastStatus": state.get("lastStatus", "unknown"),
+            "enabled": cj.get("enabled", True) if cj else bool(sb_reports_by_agent.get(ag["id"])),
+            "lastRun": last_run if sb_report else ms_to_str(state.get("lastRunAtMs")),
+            "lastStatus": last_status,
             "lastDuration": f"{(state.get('lastDurationMs', 0) / 1000):.1f}s" if state.get("lastDurationMs") else "N/A",
             "nextRun": ms_to_str(state.get("nextRunAtMs")),
-            "quickStats": extract_quick_stats(ag["id"], report),
-            "severity": report.get("severity", "unknown") if report else "no data",
+            "quickStats": quick_stats,
+            "severity": severity,
         })
     return jsonify(result)
 
