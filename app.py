@@ -1014,16 +1014,60 @@ def api_alerts_detailed():
             params={"status": "eq.open", "order": "created_at.desc", "limit": "200"},
         )
         if sb_alerts is not None:
-            # Parse JSON fields that may be stored as strings
             for alert in sb_alerts:
-                alert["evidence"] = _parse_json_field(alert.get("evidence")) or []
-                alert["fixes"] = _parse_json_field(alert.get("fixes")) or []
                 # Normalize severity → level
                 lvl = alert.get("level") or alert.get("severity", "yellow")
                 if lvl == "critical": lvl = "red"
                 elif lvl == "warning": lvl = "yellow"
                 elif lvl == "info": lvl = "green"
                 alert["level"] = lvl
+
+                # Map our schema fields to what the dashboard JS expects
+                alert["title"] = alert.get("title", "")
+                alert["why"] = alert.get("why") or alert.get("description", "")
+                alert["alert_id"] = alert.get("id", "")
+
+                # Build evidence from description + action_payload
+                evidence = _parse_json_field(alert.get("evidence")) or []
+                if not evidence and alert.get("description"):
+                    evidence = [alert["description"]]
+                    payload = alert.get("action_payload") or {}
+                    if isinstance(payload, dict):
+                        for k, v in payload.items():
+                            if isinstance(v, list):
+                                evidence.append(f"{k}: {', '.join(str(x) for x in v)}")
+                            elif isinstance(v, (int, float)):
+                                evidence.append(f"{k}: {v}")
+                alert["evidence"] = evidence
+
+                # Build fixes from action_type + action_payload
+                fixes = _parse_json_field(alert.get("fixes")) or []
+                if not fixes and alert.get("action_type"):
+                    action_type = alert["action_type"]
+                    payload = alert.get("action_payload") or {}
+                    fix_desc = action_type.replace("_", " ").title()
+                    if isinstance(payload, dict):
+                        details = []
+                        for k, v in payload.items():
+                            if isinstance(v, list):
+                                details.append(f"{k}: {', '.join(str(x) for x in v)}")
+                            else:
+                                details.append(f"{k}: {v}")
+                        if details:
+                            fix_desc += " — " + "; ".join(details)
+                    fixes = [{
+                        "description": fix_desc,
+                        "action_type": action_type,
+                        "assigned_agent": alert.get("agent", ""),
+                        "estimated_impact": "See alert description",
+                    }]
+                alert["fixes"] = fixes
+
+                # Impact estimate
+                if not alert.get("impact_monthly"):
+                    alert["impact_monthly"] = 0
+                alert["impact_type"] = alert.get("impact_type", "estimated")
+
             # Sort: red first, then yellow, then green; within level by impact desc
             order = {"red": 0, "yellow": 1, "green": 2}
             sb_alerts.sort(key=lambda a: (order.get(a.get("level", ""), 3), -(a.get("impact_monthly") or 0)))
