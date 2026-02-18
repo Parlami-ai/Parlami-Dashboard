@@ -937,9 +937,17 @@ def api_alerts():
     if _SUPABASE_AVAILABLE:
         sb_alerts = _sb_get(
             "parlami_alerts",
-            params={"status": "eq.active", "order": "created_at.desc", "limit": "200"},
+            params={"status": "eq.open", "order": "created_at.desc", "limit": "200"},
         )
         if sb_alerts is not None:
+            # Normalize: support both 'level' and 'severity' field names
+            for a in sb_alerts:
+                lvl = a.get("level") or a.get("severity", "yellow")
+                # Map severity names to level colors
+                if lvl == "critical": lvl = "red"
+                elif lvl == "warning": lvl = "yellow"
+                elif lvl == "info": lvl = "green"
+                a["level"] = lvl
             red = sum(1 for a in sb_alerts if a.get("level") == "red")
             yellow = sum(1 for a in sb_alerts if a.get("level") == "yellow")
             green = sum(1 for a in sb_alerts if a.get("level") == "green")
@@ -968,13 +976,19 @@ def api_alerts_detailed():
     if _SUPABASE_AVAILABLE:
         sb_alerts = _sb_get(
             "parlami_alerts",
-            params={"status": "eq.active", "order": "created_at.desc", "limit": "200"},
+            params={"status": "eq.open", "order": "created_at.desc", "limit": "200"},
         )
         if sb_alerts is not None:
             # Parse JSON fields that may be stored as strings
             for alert in sb_alerts:
                 alert["evidence"] = _parse_json_field(alert.get("evidence")) or []
                 alert["fixes"] = _parse_json_field(alert.get("fixes")) or []
+                # Normalize severity → level
+                lvl = alert.get("level") or alert.get("severity", "yellow")
+                if lvl == "critical": lvl = "red"
+                elif lvl == "warning": lvl = "yellow"
+                elif lvl == "info": lvl = "green"
+                alert["level"] = lvl
             # Sort: red first, then yellow, then green; within level by impact desc
             order = {"red": 0, "yellow": 1, "green": 2}
             sb_alerts.sort(key=lambda a: (order.get(a.get("level", ""), 3), -(a.get("impact_monthly") or 0)))
