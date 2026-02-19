@@ -224,6 +224,72 @@
         .pulse {
             animation: pulse 2s ease-in-out infinite;
         }
+
+        /* Agent cards */
+        .agent-card {
+            background: #16213e;
+            border: 1px solid #2a3a5c;
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .agent-card .agent-emoji { font-size: 1.8em; }
+        .agent-card .agent-info { flex: 1; }
+        .agent-card .agent-name { font-weight: 700; font-size: 1.05em; font-family: 'Space Grotesk', sans-serif; }
+        .agent-card .agent-role { color: #94a3b8; font-size: 0.82em; margin-top: 2px; }
+        .agent-card .agent-meta { color: #64748b; font-size: 0.78em; margin-top: 6px; }
+        .severity-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.82em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .severity-badge:hover { transform: scale(1.08); box-shadow: 0 0 12px rgba(255,255,255,0.15); }
+        .severity-badge.red { background: #ef4444; color: #fff; }
+        .severity-badge.yellow { background: #eab308; color: #1a1a2e; }
+        .severity-badge.green { background: #22c55e; color: #1a1a2e; }
+        .severity-badge.unknown { background: #64748b; color: #fff; }
+
+        /* Alert items */
+        .alert-item {
+            background: #16213e;
+            border: 1px solid #2a3a5c;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 12px;
+            border-left: 4px solid #64748b;
+        }
+        .alert-item.red { border-left-color: #ef4444; }
+        .alert-item.yellow { border-left-color: #eab308; }
+        .alert-item.green { border-left-color: #22c55e; }
+        .alert-item .alert-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+        .alert-item .alert-title { font-weight: 700; font-size: 1.05em; }
+        .alert-item .alert-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+        .alert-item .alert-tag { background: #2a3a5c; padding: 2px 10px; border-radius: 10px; font-size: 0.75em; color: #94a3b8; }
+        .alert-item .alert-why { color: #94a3b8; font-size: 0.9em; margin: 8px 0; }
+        .alert-item .alert-evidence { color: #64748b; font-size: 0.82em; margin: 6px 0; padding-left: 12px; border-left: 2px solid #2a3a5c; }
+        .alert-item .fix-section { margin-top: 12px; }
+        .fix-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.88em;
+            transition: opacity 0.2s;
+        }
+        .fix-btn:hover { opacity: 0.85; }
+        .fix-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .fix-desc { color: #94a3b8; font-size: 0.85em; margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -288,6 +354,22 @@
                         🔄 Refresh Data
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Agents Overview -->
+        <div class="card" id="agents-section">
+            <h2>🤖 Agents Overview</h2>
+            <div id="agents-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
+                <div class="loading pulse">Loading agents...</div>
+            </div>
+        </div>
+
+        <!-- Alerts Section -->
+        <div class="card" id="alerts-section">
+            <h2>🚨 Alerts &amp; Recommended Fixes <span id="alerts-filter-label" style="font-size:0.6em;color:#94a3b8;margin-left:12px;display:none;">Filtering: <span id="filter-agent-name"></span> <a href="#" onclick="clearAlertFilter();return false;" style="color:#3b82f6;margin-left:8px;">✕ Clear</a></span></h2>
+            <div id="alerts-list" style="max-height:600px;overflow-y:auto;">
+                <div class="loading pulse">Loading alerts...</div>
             </div>
         </div>
 
@@ -423,9 +505,128 @@
             document.getElementById('error-container').innerHTML = '';
         }
 
+        // ---- Agents & Alerts ----
+        let allAlerts = [];
+        let allAgents = [];
+        let currentFilter = null;
+
+        async function loadAgents() {
+            try {
+                const res = await fetch('/api/agents');
+                allAgents = await res.json();
+                const grid = document.getElementById('agents-grid');
+                if (!allAgents.length) { grid.innerHTML = '<div class="loading">No agents configured</div>'; return; }
+                grid.innerHTML = allAgents.map(ag => {
+                    const sev = (ag.severity || 'unknown').toLowerCase();
+                    const sevClass = ['red','yellow','green'].includes(sev) ? sev : 'unknown';
+                    const label = sev === 'red' ? '🔴 Critical' : sev === 'yellow' ? '🟡 Warning' : sev === 'green' ? '🟢 Healthy' : '⚪ Unknown';
+                    const stats = ag.quickStats ? Object.entries(ag.quickStats).map(([k,v]) => `${k}: ${v}`).join(' · ') : '';
+                    return `<div class="agent-card">
+                        <div class="agent-emoji">${ag.emoji || '🤖'}</div>
+                        <div class="agent-info">
+                            <div class="agent-name">${ag.name}</div>
+                            <div class="agent-role">${ag.role || ''}</div>
+                            ${stats ? `<div class="agent-meta">${stats}</div>` : ''}
+                            <div class="agent-meta">Last: ${ag.lastRun || 'Never'}</div>
+                        </div>
+                        <span class="severity-badge ${sevClass}" onclick="filterAlertsByAgent('${ag.id}','${ag.name}')" title="Click to see ${ag.name} alerts">${label}</span>
+                    </div>`;
+                }).join('');
+            } catch(e) { console.error('loadAgents', e); }
+        }
+
+        async function loadAlerts() {
+            try {
+                const res = await fetch('/api/alerts/detailed');
+                allAlerts = await res.json();
+                renderAlerts();
+            } catch(e) { console.error('loadAlerts', e); }
+        }
+
+        function renderAlerts() {
+            const container = document.getElementById('alerts-list');
+            let alerts = allAlerts;
+            if (currentFilter) {
+                alerts = alerts.filter(a => (a.agent || '').toLowerCase() === currentFilter.toLowerCase());
+            }
+            if (!alerts.length) {
+                container.innerHTML = `<div class="loading">${currentFilter ? 'No alerts for this agent' : 'No open alerts 🎉'}</div>`;
+                return;
+            }
+            container.innerHTML = alerts.map(a => {
+                const lvl = (a.level || 'yellow');
+                const school = a.client_slug || '';
+                const evidence = (a.evidence || []).slice(0, 3).map(e => `<div class="alert-evidence">${escHtml(String(e))}</div>`).join('');
+                const fixes = (a.fixes || []).map((f, i) => `
+                    <div class="fix-desc">💡 ${escHtml(f.description || '')}</div>
+                    <button class="fix-btn" onclick="applyFix(this, '${a.alert_id || a.id || ''}', ${i})">🔧 Fix This</button>
+                `).join('');
+                return `<div class="alert-item ${lvl}">
+                    <div class="alert-header">
+                        <span class="severity-badge ${lvl}" style="cursor:default;font-size:0.72em;padding:3px 10px;">${lvl.toUpperCase()}</span>
+                        <span class="alert-title">${escHtml(a.title || a.message || 'Alert')}</span>
+                        <div class="alert-meta">
+                            ${a.agent ? `<span class="alert-tag">🤖 ${escHtml(a.agent)}</span>` : ''}
+                            ${school ? `<span class="alert-tag">🏫 ${escHtml(school)}</span>` : ''}
+                        </div>
+                    </div>
+                    ${a.why ? `<div class="alert-why">${escHtml(a.why)}</div>` : ''}
+                    ${evidence}
+                    ${fixes ? `<div class="fix-section">${fixes}</div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        function filterAlertsByAgent(agentId, agentName) {
+            currentFilter = agentId;
+            document.getElementById('filter-agent-name').textContent = agentName;
+            document.getElementById('alerts-filter-label').style.display = 'inline';
+            renderAlerts();
+            document.getElementById('alerts-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function clearAlertFilter() {
+            currentFilter = null;
+            document.getElementById('alerts-filter-label').style.display = 'none';
+            renderAlerts();
+        }
+
+        async function applyFix(btn, alertId, fixIndex) {
+            if (!alertId) return;
+            btn.disabled = true;
+            btn.textContent = '⏳ Applying...';
+            try {
+                const res = await fetch('/api/fix', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ alert_id: alertId, fix_index: fixIndex })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    btn.textContent = '✅ Applied';
+                    btn.style.background = '#22c55e';
+                } else {
+                    btn.textContent = '❌ ' + (data.error || 'Failed');
+                    btn.disabled = false;
+                }
+            } catch(e) {
+                btn.textContent = '❌ Error';
+                btn.disabled = false;
+            }
+        }
+
+        function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+        // Check URL hash for agent filter
+        if (window.location.hash.startsWith('#agent=')) {
+            currentFilter = decodeURIComponent(window.location.hash.slice(7));
+        }
+
         // Initial load
         loadAllData();
         loadStatus();
+        loadAgents();
+        loadAlerts();
 
         // Auto-refresh every 30 seconds
         autoRefreshInterval = setInterval(loadAllData, 30000);
