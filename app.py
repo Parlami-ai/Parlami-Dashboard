@@ -1343,5 +1343,85 @@ def api_leads():
     return jsonify(_load_leads())
 
 
+# ─── Marco Briefing ────────────────────────────────────────────────────────────
+
+try:
+    import markdown as _markdown
+    _MARKDOWN_AVAILABLE = True
+except ImportError:
+    _MARKDOWN_AVAILABLE = False
+
+BRIEFING_DIRS = [
+    os.path.expanduser("~/clawd/parlami/data/marco/briefings"),
+    os.path.expanduser("~/clawd/parlami/reports"),
+]
+SAMPLE_BRIEFING_DIR = os.path.join(SAMPLE_DIR, "briefings")
+
+
+def _find_latest_briefing():
+    """Find the latest Marco briefing markdown file."""
+    candidates = []
+    for d in BRIEFING_DIRS:
+        if os.path.isdir(d):
+            # Match YYYY-MM-DD.md or marco-*.md
+            for pattern in ["????-??-??.md", "marco-*.md"]:
+                candidates.extend(glob.glob(os.path.join(d, pattern)))
+    # Also check sample dir for deployment fallback
+    if not candidates and os.path.isdir(SAMPLE_BRIEFING_DIR):
+        candidates.extend(glob.glob(os.path.join(SAMPLE_BRIEFING_DIR, "*.md")))
+    if not candidates:
+        return None, None
+    latest = max(candidates, key=os.path.getmtime)
+    # Extract date from filename
+    basename = os.path.basename(latest).replace(".md", "")
+    date_str = basename.replace("marco-", "")
+    try:
+        datetime.strptime(date_str, "%Y-%m-%d")
+    except ValueError:
+        date_str = datetime.fromtimestamp(os.path.getmtime(latest)).strftime("%Y-%m-%d")
+    return latest, date_str
+
+
+def _md_to_html(raw):
+    """Convert markdown to HTML with color-coded alerts."""
+    if _MARKDOWN_AVAILABLE:
+        html = _markdown.markdown(raw, extensions=["tables", "fenced_code"])
+    else:
+        import re
+        html = raw
+        html = re.sub(r'^### (.+)$', r'<h3>\1</h3>', html, flags=re.MULTILINE)
+        html = re.sub(r'^## (.+)$', r'<h2>\1</h2>', html, flags=re.MULTILINE)
+        html = re.sub(r'^# (.+)$', r'<h1>\1</h1>', html, flags=re.MULTILINE)
+        html = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', html)
+        html = re.sub(r'^- (.+)$', r'<li>\1</li>', html, flags=re.MULTILINE)
+        html = html.replace('\n\n', '</p><p>').replace('\n', '<br>')
+        html = f'<p>{html}</p>'
+    # Color-code keywords
+    import re
+    html = re.sub(r'(🔴\s*RED|RED ALERT|Threat Level:\s*🔴\s*RED)', r'<span class="briefing-red">\1</span>', html)
+    html = re.sub(r'(🟡\s*YELLOW|YELLOW WARNING)', r'<span class="briefing-yellow">\1</span>', html)
+    html = re.sub(r'(🟢\s*GREEN|WIN|WINS)', r'<span class="briefing-green">\1</span>', html)
+    return html
+
+
+@app.route("/api/marco-briefing")
+def api_marco_briefing():
+    filepath, date_str = _find_latest_briefing()
+    if not filepath:
+        return jsonify({"error": "No briefing found", "date": None, "html": "", "raw": ""}), 404
+    try:
+        with open(filepath) as f:
+            raw = f.read()
+    except Exception as e:
+        return jsonify({"error": str(e), "date": None, "html": "", "raw": ""}), 500
+    html = _md_to_html(raw)
+    return jsonify({"date": date_str, "html": html, "raw": raw})
+
+
+@app.route("/briefing")
+def briefing():
+    return render_template("briefing.html")
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5050, debug=True)

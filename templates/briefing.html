@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marco's Morning Briefing — Parlami</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #1a1a2e;
+  --card: #16213e;
+  --card-hover: #1a2744;
+  --text: #e0e0e0;
+  --text-dim: #8892a4;
+  --accent: #2563EB;
+  --red: #ef4444;
+  --yellow: #eab308;
+  --green: #22c55e;
+  --border: #2a3a5c;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height:100vh; }
+.container { max-width:900px; margin:0 auto; padding:20px; }
+
+/* Nav */
+.nav-bar { display:flex; align-items:center; gap:16px; margin-bottom:24px; flex-wrap:wrap; }
+.nav-bar a { color: var(--accent); text-decoration:none; font-size:0.9rem; }
+.nav-bar a:hover { text-decoration:underline; }
+.nav-bar h1 { font-family:'Space Grotesk',sans-serif; font-size:1.6rem; font-weight:700; letter-spacing:-0.5px; flex:1; }
+.nav-bar h1 span { color: var(--accent); }
+
+/* Date badge */
+.date-badge { display:inline-block; background:var(--accent); color:#fff; padding:6px 16px; border-radius:20px; font-size:0.95rem; font-weight:600; margin-bottom:20px; }
+
+/* Briefing content */
+.briefing-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:28px 32px; line-height:1.7; }
+.briefing-card h1 { font-family:'Space Grotesk',sans-serif; font-size:1.5rem; margin-bottom:16px; color:#fff; }
+.briefing-card h2 { font-family:'Space Grotesk',sans-serif; font-size:1.2rem; margin:24px 0 12px; color:var(--accent); border-bottom:1px solid var(--border); padding-bottom:6px; }
+.briefing-card h3 { font-size:1.05rem; margin:16px 0 8px; color:#cbd5e1; }
+.briefing-card ul, .briefing-card ol { padding-left:24px; margin:8px 0; }
+.briefing-card li { margin-bottom:6px; }
+.briefing-card p { margin-bottom:12px; }
+.briefing-card strong { color:#fff; }
+.briefing-card table { width:100%; border-collapse:collapse; margin:12px 0; }
+.briefing-card th, .briefing-card td { padding:8px 12px; border:1px solid var(--border); text-align:left; font-size:0.9rem; }
+.briefing-card th { background:rgba(37,99,235,0.15); color:var(--accent); font-weight:600; }
+.briefing-card code { background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; font-size:0.85rem; }
+
+/* Color-coded spans */
+.briefing-red { color:var(--red); font-weight:700; }
+.briefing-yellow { color:var(--yellow); font-weight:700; }
+.briefing-green { color:var(--green); font-weight:700; }
+
+/* Threat level badge */
+.threat-red { background:var(--red); color:#fff; padding:4px 12px; border-radius:8px; font-weight:700; font-size:0.85rem; display:inline-block; margin-left:8px; }
+.threat-yellow { background:var(--yellow); color:#000; padding:4px 12px; border-radius:8px; font-weight:700; font-size:0.85rem; display:inline-block; margin-left:8px; }
+.threat-green { background:var(--green); color:#fff; padding:4px 12px; border-radius:8px; font-weight:700; font-size:0.85rem; display:inline-block; margin-left:8px; }
+
+.loading { color:var(--text-dim); text-align:center; padding:40px; }
+.error { color:var(--red); text-align:center; padding:40px; }
+
+/* Emoji highlights for key metrics */
+.briefing-card li:has(⭐) { color:var(--green); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="nav-bar">
+    <h1>☕ <span>Marco's</span> Morning Briefing</h1>
+    <a href="/dashboard">← Back to Dashboard</a>
+  </div>
+  <div id="dateBadge"></div>
+  <div class="briefing-card" id="briefingContent">
+    <div class="loading">Loading briefing...</div>
+  </div>
+</div>
+<script>
+async function loadBriefing() {
+  const container = document.getElementById('briefingContent');
+  const badge = document.getElementById('dateBadge');
+  try {
+    const resp = await fetch('/api/marco-briefing');
+    const data = await resp.json();
+    if (data.error && !data.html) {
+      container.innerHTML = '<div class="error">No briefing available yet. Marco hasn\'t filed today\'s report.</div>';
+      return;
+    }
+    if (data.date) {
+      const d = new Date(data.date + 'T00:00:00');
+      const fmt = d.toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+      badge.innerHTML = '<span class="date-badge">📅 ' + fmt + '</span>';
+    }
+    let html = data.html;
+    // Add threat level badge
+    html = html.replace(/Threat Level:\s*🔴\s*RED/g, 'Threat Level: <span class="threat-red">🔴 RED</span>');
+    html = html.replace(/Threat Level:\s*🟡\s*YELLOW/g, 'Threat Level: <span class="threat-yellow">🟡 YELLOW</span>');
+    html = html.replace(/Threat Level:\s*🟢\s*GREEN/g, 'Threat Level: <span class="threat-green">🟢 GREEN</span>');
+    container.innerHTML = html;
+  } catch (e) {
+    container.innerHTML = '<div class="error">Failed to load briefing: ' + e.message + '</div>';
+  }
+}
+loadBriefing();
+</script>
+</body>
+</html>
