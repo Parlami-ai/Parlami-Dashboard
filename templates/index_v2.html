@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parlami.ai — Client Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1117;
+  --sidebar: #161820;
+  --card: #1a1d27;
+  --card-hover: #1e2230;
+  --border: #2a2d3a;
+  --text: #e4e4e7;
+  --text-dim: #71717a;
+  --text-muted: #52525b;
+  --accent: #6366f1;
+  --accent-light: #818cf8;
+  --green: #22c55e;
+  --green-bg: rgba(34,197,94,0.1);
+  --red: #ef4444;
+  --red-bg: rgba(239,68,68,0.1);
+  --yellow: #eab308;
+  --yellow-bg: rgba(234,179,8,0.1);
+  --blue: #3b82f6;
+  --blue-bg: rgba(59,130,246,0.1);
+  --purple: #a855f7;
+  --orange: #f97316;
+  --teal: #14b8a6;
+  --radius: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar {
+  width: 260px; background: var(--sidebar); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 10;
+}
+.sidebar-logo {
+  padding: 20px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar-logo img { width: 32px; height: 32px; border-radius: 8px; background: var(--accent); }
+.sidebar-logo .logo-text { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+.sidebar-logo .logo-ai { color: var(--accent-light); }
+
+.sidebar-nav { flex: 1; padding: 12px; overflow-y: auto; }
+.nav-section { margin-bottom: 20px; }
+.nav-section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); padding: 8px 12px; font-weight: 600; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px;
+  font-size: 13px; color: var(--text-dim); cursor: pointer; transition: all 0.15s;
+  margin: 1px 0;
+}
+.nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+.nav-item.active { background: rgba(99,102,241,0.15); color: var(--accent-light); font-weight: 500; }
+.nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+.nav-badge { margin-left: auto; background: var(--red); color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: 600; }
+
+.sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
+.school-selector {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: var(--card); border-radius: 8px; cursor: pointer;
+}
+.school-avatar { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #009688, #00796b); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.school-name { font-size: 12px; font-weight: 600; }
+.school-plan { font-size: 10px; color: var(--text-muted); }
+
+/* Main */
+.main { flex: 1; margin-left: 260px; }
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: rgba(15,17,23,0.9); backdrop-filter: blur(10px); z-index: 5;
+}
+.topbar-left h2 { font-size: 20px; font-weight: 700; }
+.topbar-left .date { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.topbar-btn {
+  padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border);
+  background: transparent; color: var(--text); font-size: 12px; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; font-weight: 500;
+}
+.topbar-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.content { padding: 24px 28px; }
+
+/* Score Cards Row */
+.score-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 24px; }
+.score-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px 18px; position: relative; overflow: hidden;
+}
+.score-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.score-card.green::before { background: var(--green); }
+.score-card.red::before { background: var(--red); }
+.score-card.blue::before { background: var(--blue); }
+.score-card.purple::before { background: var(--purple); }
+.score-card.orange::before { background: var(--orange); }
+.score-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.score-value { font-size: 28px; font-weight: 800; letter-spacing: -1px; }
+.score-change { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; margin-top: 4px; padding: 2px 6px; border-radius: 4px; }
+.score-change.up { color: var(--green); background: var(--green-bg); }
+.score-change.down { color: var(--red); background: var(--red-bg); }
+.score-change.flat { color: var(--text-muted); background: rgba(255,255,255,0.05); }
+.score-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* Two Column Layout */
+.grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; margin-bottom: 24px; }
+.grid-equal { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 24px; }
+
+/* Card */
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden;
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid var(--border);
+}
+.card-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.card-title .icon { font-size: 16px; }
+.card-action { font-size: 11px; color: var(--accent-light); cursor: pointer; font-weight: 500; }
+.card-body { padding: 16px 18px; }
+
+/* Lead Pipeline */
+.pipeline { display: flex; gap: 2px; height: 32px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
+.pipeline-stage { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; }
+.pipeline-stage.new { background: var(--blue); flex: 3; }
+.pipeline-stage.tour { background: var(--purple); flex: 2; }
+.pipeline-stage.enrolled { background: var(--green); flex: 1; }
+.pipeline-stage.lost { background: var(--red); flex: 1; }
+
+.pipeline-labels { display: flex; gap: 14px; flex-wrap: wrap; }
+.pipeline-label { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-dim); }
+.pipeline-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+/* Review Stars */
+.stars { display: flex; align-items: center; gap: 2px; }
+.star { color: #fbbf24; font-size: 16px; }
+.star.empty { color: var(--text-muted); }
+
+/* Table */
+.table-mini { width: 100%; }
+.table-mini th { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); text-align: left; padding: 8px 0; border-bottom: 1px solid var(--border); font-weight: 600; }
+.table-mini td { font-size: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.table-mini tr:last-child td { border-bottom: none; }
+
+/* Status dots */
+.status { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 500; }
+.status.live { color: var(--green); background: var(--green-bg); }
+.status.pending { color: var(--yellow); background: var(--yellow-bg); }
+.status.paused { color: var(--red); background: var(--red-bg); }
+
+/* Activity feed */
+.activity-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.activity-item:last-child { border-bottom: none; }
+.activity-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+.activity-icon.seo { background: var(--blue-bg); }
+.activity-icon.ads { background: var(--yellow-bg); }
+.activity-icon.review { background: var(--green-bg); }
+.activity-icon.content { background: rgba(168,85,247,0.1); }
+.activity-icon.alert { background: var(--red-bg); }
+.activity-text { font-size: 12px; line-height: 1.5; }
+.activity-text strong { color: var(--text); font-weight: 600; }
+.activity-time { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+/* Chart placeholder */
+.chart-placeholder {
+  height: 180px; background: linear-gradient(180deg, rgba(99,102,241,0.08), transparent);
+  border-radius: 8px; display: flex; align-items: flex-end; padding: 0 10px; gap: 4px;
+}
+.chart-bar { flex: 1; border-radius: 4px 4px 0 0; background: var(--accent); opacity: 0.7; transition: opacity 0.2s; }
+.chart-bar:hover { opacity: 1; }
+
+/* AI Insights */
+.insight {
+  background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.05));
+  border: 1px solid rgba(99,102,241,0.2); border-radius: 8px;
+  padding: 12px 14px; margin-bottom: 10px; font-size: 12px; line-height: 1.6;
+}
+.insight:last-child { margin-bottom: 0; }
+.insight-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; color: var(--accent-light); margin-bottom: 4px; }
+
+/* Health Score Gauge */
+.health-gauge { text-align: center; padding: 10px 0; }
+.health-score { font-size: 48px; font-weight: 800; letter-spacing: -2px; }
+.health-score.good { color: var(--green); }
+.health-score.ok { color: var(--yellow); }
+.health-score.bad { color: var(--red); }
+.health-label { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+.health-bars { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.health-bar-row { display: flex; align-items: center; gap: 10px; }
+.health-bar-label { font-size: 11px; color: var(--text-dim); min-width: 70px; }
+.health-bar-track { flex: 1; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; }
+.health-bar-fill { height: 100%; border-radius: 3px; }
+.health-bar-value { font-size: 11px; font-weight: 600; min-width: 35px; text-align: right; }
+
+/* Upcoming */
+.upcoming-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.upcoming-item:last-child { border-bottom: none; }
+.upcoming-date { text-align: center; min-width: 40px; }
+.upcoming-date .day { font-size: 18px; font-weight: 700; }
+.upcoming-date .month { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
+.upcoming-info .title { font-size: 12px; font-weight: 600; }
+.upcoming-info .detail { font-size: 11px; color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-size:16px;">🗣️</div>
+    <div>
+      <span class="logo-text">parlami<span class="logo-ai">.ai</span></span>
+    </div>
+  </div>
+  
+  <div class="sidebar-nav">
+    <div class="nav-section">
+      <div class="nav-section-label">Overview</div>
+      <div class="nav-item active"><span class="icon">📊</span> Dashboard</div>
+      <div class="nav-item"><span class="icon">🔔</span> Notifications <span class="nav-badge">3</span></div>
+      <div class="nav-item"><span class="icon">📋</span> Monthly Report</div>
+    </div>
+    
+    <div class="nav-section">
+      <div class="nav-section-label">Marketing</div>
+      <div class="nav-item"><span class="icon">📢</span> Google Ads</div>
+      <div class="nav-item"><span class="icon">🕵️</span> SEO & Rankings</div>
+      <div class="nav-item"><span class="icon">📍</span> Local SEO</div>
+      <div class="nav-item"><span class="icon">🖊️</span> Blog & Content</div>
+      <div class="nav-item"><span class="icon">🎨</span> Ad Creatives</div>
+      <div class="nav-item"><span class="icon">📱</span> Social Media</div>
+    </div>
+    
+    <div class="nav-section">
+      <div class="nav-section-label">Growth</div>
+      <div class="nav-item"><span class="icon">👥</span> Leads & CRM</div>
+      <div class="nav-item"><span class="icon">⭐</span> Reviews</div>
+      <div class="nav-item"><span class="icon">✉️</span> Email Campaigns</div>
+      <div class="nav-item"><span class="icon">📅</span> Tour Bookings</div>
+      <div class="nav-item"><span class="icon">📞</span> Call Tracking</div>
+    </div>
+    
+    <div class="nav-section">
+      <div class="nav-section-label">Website</div>
+      <div class="nav-item"><span class="icon">🏗️</span> Pages & Speed</div>
+      <div class="nav-item"><span class="icon">🤖</span> AI Chatbot</div>
+      <div class="nav-item"><span class="icon">🔍</span> Competitors</div>
+    </div>
+    
+    <div class="nav-section">
+      <div class="nav-section-label">Account</div>
+      <div class="nav-item"><span class="icon">⚙️</span> Settings</div>
+      <div class="nav-item"><span class="icon">💳</span> Billing</div>
+      <div class="nav-item"><span class="icon">❓</span> Help</div>
+    </div>
+  </div>
+  
+  <div class="sidebar-footer">
+    <div class="school-selector">
+      <div class="school-avatar">🏫</div>
+      <div>
+        <div class="school-name">Amici Montessori</div>
+        <div class="school-plan">Pro Plan · $1,497/mo</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h2>Good morning, Sean 👋</h2>
+      <div class="date">Saturday, March 8, 2026 · Last updated 6:30 AM</div>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn">📥 Download Report</button>
+      <button class="topbar-btn primary">💬 Talk to AI</button>
+    </div>
+  </div>
+  
+  <div class="content">
+    <!-- Score Cards -->
+    <div class="score-row">
+      <div class="score-card green">
+        <div class="score-label">Website Visitors</div>
+        <div class="score-value">1,247</div>
+        <div class="score-change up">↑ 12.3% vs last week</div>
+        <div class="score-sub">847 organic · 312 paid · 88 social</div>
+      </div>
+      <div class="score-card blue">
+        <div class="score-label">New Leads</div>
+        <div class="score-value">23</div>
+        <div class="score-change up">↑ 4 more than last week</div>
+        <div class="score-sub">8 tours booked · 15 inquiries</div>
+      </div>
+      <div class="score-card purple">
+        <div class="score-label">Ad Spend</div>
+        <div class="score-value">$487</div>
+        <div class="score-change flat">— On budget ($500/wk)</div>
+        <div class="score-sub">$21.17 per lead · 3 conversions</div>
+      </div>
+      <div class="score-card orange">
+        <div class="score-label">Google Reviews</div>
+        <div class="score-value">4.8 ⭐</div>
+        <div class="score-change up">↑ 2 new this week</div>
+        <div class="score-sub">47 total reviews · 0 unresponded</div>
+      </div>
+      <div class="score-card green">
+        <div class="score-label">SEO Health</div>
+        <div class="score-value">87</div>
+        <div class="score-change up">↑ 3 pts this month</div>
+        <div class="score-sub">12 keywords page 1 · 3 rising</div>
+      </div>
+    </div>
+    
+    <!-- AI Insights + Health -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">🧠</span> AI Insights — What Your Team Did This Week</div>
+          <span class="card-action">View all →</span>
+        </div>
+        <div class="card-body">
+          <div class="insight">
+            <div class="insight-badge">🕵️ SEO Agent</div>
+            <strong>"Montessori preschool Ahwatukee"</strong> moved from position 14 → 8 this week. Your community page is gaining traction. I optimized the meta description and added FAQ schema — expect another 2-3 position jump next week.
+          </div>
+          <div class="insight">
+            <div class="insight-badge">📢 Ads Agent</div>
+            The search term <strong>"trilingual preschool near me"</strong> converted 3 tour bookings at $18/each this week. I've increased bid on this keyword by 15%. Meanwhile, I blocked 12 irrelevant searches saving ~$34/week.
+          </div>
+          <div class="insight">
+            <div class="insight-badge">🖊️ Content Agent</div>
+            Published <strong>"Why Trilingual Education Matters in 2026"</strong> — already ranking position 23 for "trilingual education benefits." Added AEO answer block targeting Google's AI Overview. Expected to reach page 1 in 2-3 weeks.
+          </div>
+          <div class="insight">
+            <div class="insight-badge">⭐ Reviews Agent</div>
+            You haven't received a new Google review in <strong>12 days</strong>. I've drafted a review request email for your 5 most recent tour families. <span style="color:var(--accent-light);cursor:pointer;font-weight:600;">Approve & Send →</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">❤️</span> Marketing Health Score</div>
+        </div>
+        <div class="card-body">
+          <div class="health-gauge">
+            <div class="health-score good">87</div>
+            <div class="health-label">Your marketing is performing well</div>
+          </div>
+          <div class="health-bars">
+            <div class="health-bar-row">
+              <span class="health-bar-label">SEO</span>
+              <div class="health-bar-track"><div class="health-bar-fill" style="width:85%;background:var(--green)"></div></div>
+              <span class="health-bar-value" style="color:var(--green)">85</span>
+            </div>
+            <div class="health-bar-row">
+              <span class="health-bar-label">Ads</span>
+              <div class="health-bar-track"><div class="health-bar-fill" style="width:78%;background:var(--green)"></div></div>
+              <span class="health-bar-value" style="color:var(--green)">78</span>
+            </div>
+            <div class="health-bar-row">
+              <span class="health-bar-label">Reviews</span>
+              <div class="health-bar-track"><div class="health-bar-fill" style="width:92%;background:var(--green)"></div></div>
+              <span class="health-bar-value" style="color:var(--green)">92</span>
+            </div>
+            <div class="health-bar-row">
+              <span class="health-bar-label">Content</span>
+              <div class="health-bar-track"><div class="health-bar-fill" style="width:70%;background:var(--yellow)"></div></div>
+              <span class="health-bar-value" style="color:var(--yellow)">70</span>
+            </div>
+            <div class="health-bar-row">
+              <span class="health-bar-label">Social</span>
+              <div class="health-bar-track"><div class="health-bar-fill" style="width:45%;background:var(--red)"></div></div>
+              <span class="health-bar-value" style="color:var(--red)">45</span>
+            </div>
+            <div class="health-bar-row">
+              <span class="health-bar-label">Email</span>
+              <div class="health-bar-track"><div class="health-bar-fill" style="width:60%;background:var(--yellow)"></div></div>
+              <span class="health-bar-value" style="color:var(--yellow)">60</span>
+            </div>
+            <div class="health-bar-row">
+              <span class="health-bar-label">Website</span>
+              <div class="health-bar-track"><div class="health-bar-fill" style="width:90%;background:var(--green)"></div></div>
+              <span class="health-bar-value" style="color:var(--green)">90</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Lead Pipeline + Traffic Chart -->
+    <div class="grid-equal">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">👥</span> Lead Pipeline</div>
+          <span class="card-action">View CRM →</span>
+        </div>
+        <div class="card-body">
+          <div class="pipeline">
+            <div class="pipeline-stage new">23 New</div>
+            <div class="pipeline-stage tour">8 Tours</div>
+            <div class="pipeline-stage enrolled">3 Enrolled</div>
+            <div class="pipeline-stage lost">2 Lost</div>
+          </div>
+          <div class="pipeline-labels">
+            <div class="pipeline-label"><div class="pipeline-dot" style="background:var(--blue)"></div> New Inquiries</div>
+            <div class="pipeline-label"><div class="pipeline-dot" style="background:var(--purple)"></div> Tour Scheduled</div>
+            <div class="pipeline-label"><div class="pipeline-dot" style="background:var(--green)"></div> Enrolled</div>
+            <div class="pipeline-label"><div class="pipeline-dot" style="background:var(--red)"></div> Lost</div>
+          </div>
+          
+          <table class="table-mini" style="margin-top:14px;">
+            <thead><tr><th>Lead</th><th>Source</th><th>Stage</th><th>Since</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Maria G.</strong></td><td style="color:var(--text-dim)">Google Ads</td><td><span class="status live">Tour Mar 10</span></td><td style="color:var(--text-muted)">2d ago</td></tr>
+              <tr><td><strong>James L.</strong></td><td style="color:var(--text-dim)">Organic</td><td><span class="status live">Tour Mar 11</span></td><td style="color:var(--text-muted)">3d ago</td></tr>
+              <tr><td><strong>Sofia R.</strong></td><td style="color:var(--text-dim)">Chatbot</td><td><span class="status pending">Contacted</span></td><td style="color:var(--text-muted)">1d ago</td></tr>
+              <tr><td><strong>David K.</strong></td><td style="color:var(--text-dim)">Referral</td><td><span class="status pending">New</span></td><td style="color:var(--text-muted)">Today</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">📈</span> Website Traffic — Last 30 Days</div>
+          <span class="card-action">View analytics →</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-placeholder">
+            <div class="chart-bar" style="height:35%"></div>
+            <div class="chart-bar" style="height:42%"></div>
+            <div class="chart-bar" style="height:38%"></div>
+            <div class="chart-bar" style="height:55%"></div>
+            <div class="chart-bar" style="height:48%"></div>
+            <div class="chart-bar" style="height:62%"></div>
+            <div class="chart-bar" style="height:58%"></div>
+            <div class="chart-bar" style="height:45%"></div>
+            <div class="chart-bar" style="height:52%"></div>
+            <div class="chart-bar" style="height:68%"></div>
+            <div class="chart-bar" style="height:72%"></div>
+            <div class="chart-bar" style="height:65%"></div>
+            <div class="chart-bar" style="height:70%"></div>
+            <div class="chart-bar" style="height:58%"></div>
+            <div class="chart-bar" style="height:62%"></div>
+            <div class="chart-bar" style="height:75%"></div>
+            <div class="chart-bar" style="height:80%"></div>
+            <div class="chart-bar" style="height:72%"></div>
+            <div class="chart-bar" style="height:78%"></div>
+            <div class="chart-bar" style="height:85%"></div>
+            <div class="chart-bar" style="height:90%"></div>
+            <div class="chart-bar" style="height:82%"></div>
+            <div class="chart-bar" style="height:76%"></div>
+            <div class="chart-bar" style="height:88%"></div>
+            <div class="chart-bar" style="height:92%"></div>
+            <div class="chart-bar" style="height:85%"></div>
+            <div class="chart-bar" style="height:95%"></div>
+            <div class="chart-bar" style="height:88%"></div>
+            <div class="chart-bar" style="height:82%"></div>
+            <div class="chart-bar" style="height:90%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:var(--text-muted);">
+            <span>Feb 7</span><span>Feb 14</span><span>Feb 21</span><span>Feb 28</span><span>Mar 7</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Recent Activity + Upcoming -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">⚡</span> Recent Activity</div>
+          <span class="card-action">View all →</span>
+        </div>
+        <div class="card-body">
+          <div class="activity-item">
+            <div class="activity-icon content">🖊️</div>
+            <div><div class="activity-text"><strong>Blog published:</strong> "Why Trilingual Education Matters in 2026" — 1,602 words, AEO optimized, submitted to Google for indexing</div><div class="activity-time">Today, 8:30 AM</div></div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon ads">📢</div>
+            <div><div class="activity-text"><strong>Google Ads:</strong> Blocked 12 irrelevant search terms saving ~$34/week. Added "trilingual preschool near me" as priority keyword.</div><div class="activity-time">Today, 8:00 AM</div></div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon review">⭐</div>
+            <div><div class="activity-text"><strong>New review:</strong> ⭐⭐⭐⭐⭐ from Jennifer M. — "Amazing trilingual program, my daughter loves it!" — Auto-responded with thank you.</div><div class="activity-time">Yesterday, 3:15 PM</div></div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon seo">🕵️</div>
+            <div><div class="activity-text"><strong>Ranking improved:</strong> "montessori preschool ahwatukee" moved from #14 → #8. Community page optimized with FAQ schema.</div><div class="activity-time">Yesterday, 7:00 AM</div></div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon alert">🚨</div>
+            <div><div class="activity-text"><strong>Issue fixed:</strong> Tour booking page load time was 4.2s — optimized images and caching, now 1.8s.</div><div class="activity-time">Mar 6, 5:30 AM</div></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">📅</span> Upcoming</div>
+        </div>
+        <div class="card-body">
+          <div class="upcoming-item">
+            <div class="upcoming-date"><div class="day">10</div><div class="month">MAR</div></div>
+            <div class="upcoming-info"><div class="title">Tour — Maria G.</div><div class="detail">10:00 AM · Referred by Google Ads</div></div>
+          </div>
+          <div class="upcoming-item">
+            <div class="upcoming-date"><div class="day">11</div><div class="month">MAR</div></div>
+            <div class="upcoming-info"><div class="title">Tour — James L.</div><div class="detail">2:00 PM · Found via organic search</div></div>
+          </div>
+          <div class="upcoming-item">
+            <div class="upcoming-date"><div class="day">12</div><div class="month">MAR</div></div>
+            <div class="upcoming-info"><div class="title">Blog post scheduled</div><div class="detail">"Ahwatukee's Best Preschools Compared"</div></div>
+          </div>
+          <div class="upcoming-item">
+            <div class="upcoming-date"><div class="day">15</div><div class="month">MAR</div></div>
+            <div class="upcoming-info"><div class="title">Monthly report ready</div><div class="detail">February performance summary</div></div>
+          </div>
+          <div class="upcoming-item">
+            <div class="upcoming-date"><div class="day">17</div><div class="month">MAR</div></div>
+            <div class="upcoming-info"><div class="title">Review request batch</div><div class="detail">5 families · Email + SMS</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom: Top Keywords + Competitor Watch -->
+    <div class="grid-equal">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">🔑</span> Top Keywords</div>
+          <span class="card-action">View all rankings →</span>
+        </div>
+        <div class="card-body">
+          <table class="table-mini">
+            <thead><tr><th>Keyword</th><th>Position</th><th>Change</th><th>Traffic</th></tr></thead>
+            <tbody>
+              <tr><td>preschool ahwatukee</td><td><strong>#4</strong></td><td><span class="score-change up" style="font-size:10px">↑ 2</span></td><td style="color:var(--text-dim)">142/mo</td></tr>
+              <tr><td>montessori ahwatukee</td><td><strong>#8</strong></td><td><span class="score-change up" style="font-size:10px">↑ 6</span></td><td style="color:var(--text-dim)">98/mo</td></tr>
+              <tr><td>trilingual preschool phoenix</td><td><strong>#3</strong></td><td><span class="score-change flat" style="font-size:10px">—</span></td><td style="color:var(--text-dim)">67/mo</td></tr>
+              <tr><td>daycare chandler</td><td><strong>#12</strong></td><td><span class="score-change up" style="font-size:10px">↑ 3</span></td><td style="color:var(--text-dim)">210/mo</td></tr>
+              <tr><td>spanish immersion preschool</td><td><strong>#6</strong></td><td><span class="score-change down" style="font-size:10px">↓ 1</span></td><td style="color:var(--text-dim)">54/mo</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">🔍</span> Competitor Watch</div>
+          <span class="card-action">Full analysis →</span>
+        </div>
+        <div class="card-body">
+          <table class="table-mini">
+            <thead><tr><th>Competitor</th><th>Reviews</th><th>Avg Rank</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Inspire Kids</strong></td><td>4.6 ⭐ (62)</td><td>#7</td><td><span class="score-change down" style="font-size:10px">↓ losing</span></td></tr>
+              <tr><td><strong>Hola Hello Nihao</strong></td><td>4.9 ⭐ (34)</td><td>#5</td><td><span class="score-change up" style="font-size:10px">↑ gaining</span></td></tr>
+              <tr><td><strong>AFM Education</strong></td><td>4.3 ⭐ (28)</td><td>#11</td><td><span class="score-change flat" style="font-size:10px">— stable</span></td></tr>
+              <tr><td><strong>Great Hearts</strong></td><td>4.1 ⭐ (156)</td><td>#2</td><td><span class="score-change flat" style="font-size:10px">— stable</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Powered by -->
+    <div style="text-align:center;padding:20px 0;color:var(--text-muted);font-size:11px;">
+      Powered by <strong style="color:var(--accent-light)">parlami.ai</strong> — 14 AI agents working 24/7 for your school
+    </div>
+  </div>
+</div>
+
+<script>
+let currentSchool = 'amici';
+
+async function loadDashboard(schoolId) {
+  currentSchool = schoolId;
+  document.querySelector('.topbar-left .date').textContent = 'Loading real data...';
+  
+  try {
+    const res = await fetch(`/api/overview/${schoolId}`);
+    const data = await res.json();
+    
+    const school = data.school;
+    const ga4 = data.ga4;
+    const ads = data.ads;
+    const gsc = data.gsc;
+    
+    // Update school selector
+    document.querySelector('.school-name').textContent = school.name;
+    document.querySelector('.school-plan').textContent = school.plan;
+    
+    // Update date
+    const now = new Date();
+    document.querySelector('.topbar-left .date').textContent = 
+      now.toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'}) + 
+      ' · Live data from GA4, Google Ads, GSC';
+    
+    // Score cards
+    const cards = document.querySelectorAll('.score-card');
+    
+    // Card 1: Website Visitors
+    if (ga4) {
+      cards[0].querySelector('.score-value').textContent = ga4.users.toLocaleString();
+      const change = ga4.usersChange;
+      const changeEl = cards[0].querySelector('.score-change');
+      changeEl.className = 'score-change ' + (change > 0 ? 'up' : change < 0 ? 'down' : 'flat');
+      changeEl.textContent = (change > 0 ? '↑ ' : change < 0 ? '↓ ' : '') + Math.abs(change) + '% vs last week';
+      
+      // Build source breakdown
+      let sourceText = '';
+      if (data.ga4_sources) {
+        sourceText = data.ga4_sources.slice(0, 3).map(s => 
+          s.sessions + ' ' + s.channel.toLowerCase()
+        ).join(' · ');
+      }
+      cards[0].querySelector('.score-sub').textContent = sourceText || ga4.sessions + ' sessions · ' + ga4.pageViews + ' page views';
+    }
+    
+    // Card 2: Sessions (instead of leads since no CRM yet)
+    if (ga4) {
+      cards[1].querySelector('.score-label').textContent = 'Sessions';
+      cards[1].querySelector('.score-value').textContent = ga4.sessions.toLocaleString();
+      const change = ga4.sessionsChange;
+      const changeEl = cards[1].querySelector('.score-change');
+      changeEl.className = 'score-change ' + (change > 0 ? 'up' : change < 0 ? 'down' : 'flat');
+      changeEl.textContent = (change > 0 ? '↑ ' : '↓ ') + Math.abs(change) + '% vs last week';
+      cards[1].querySelector('.score-sub').textContent = ga4.conversions + ' conversions · ' + ga4.bounceRate + '% bounce rate';
+    }
+    
+    // Card 3: Ad Spend
+    if (ads) {
+      const t = ads.totals;
+      cards[2].querySelector('.score-value').textContent = '$' + t.cost.toFixed(2);
+      cards[2].querySelector('.score-change').textContent = t.clicks + ' clicks · ' + t.impressions.toLocaleString() + ' impressions';
+      cards[2].querySelector('.score-change').className = 'score-change flat';
+      const enabledCount = ads.campaigns.filter(c => c.status === 'ENABLED').length;
+      cards[2].querySelector('.score-sub').textContent = 
+        (t.conversions > 0 ? '$' + t.cpa.toFixed(2) + ' per conversion' : '0 conversions') + 
+        ' · ' + enabledCount + ' active campaigns';
+    }
+    
+    // Card 4: SEO (from GSC)
+    if (gsc) {
+      cards[3].querySelector('.score-label').textContent = 'Organic Search';
+      cards[3].querySelector('.score-value').textContent = gsc.totals.clicks;
+      cards[3].querySelector('.score-change').textContent = gsc.totals.impressions.toLocaleString() + ' impressions';
+      cards[3].querySelector('.score-change').className = 'score-change flat';
+      cards[3].querySelector('.score-sub').textContent = gsc.page1Count + ' keywords page 1';
+    }
+    
+    // Card 5: Top Keyword Position
+    if (gsc && gsc.keywords.length > 0) {
+      const topKw = gsc.keywords[0];
+      cards[4].querySelector('.score-label').textContent = 'Top Keyword';
+      cards[4].querySelector('.score-value').textContent = '#' + topKw.position.toFixed(0);
+      cards[4].querySelector('.score-change').textContent = '"' + topKw.keyword + '"';
+      cards[4].querySelector('.score-change').className = 'score-change flat';
+      cards[4].querySelector('.score-sub').textContent = topKw.clicks + ' clicks · ' + topKw.ctr + '% CTR';
+    }
+    
+    // AI Insights — populate with real data
+    const insightsBody = document.querySelector('.card-body');
+    if (ga4 && ads && gsc) {
+      let insights = '';
+      
+      // Traffic insight
+      const topSource = data.ga4_sources && data.ga4_sources[0];
+      if (topSource) {
+        insights += `<div class="insight"><div class="insight-badge">🧭 Analytics</div>
+          <strong>${topSource.channel}</strong> is your top traffic source with ${topSource.sessions} sessions this week.
+          ${ga4.bounceRate > 60 ? `⚠️ Bounce rate is ${ga4.bounceRate}% — visitors may not be finding what they need.` : `Bounce rate is ${ga4.bounceRate}% — solid engagement.`}
+        </div>`;
+      }
+      
+      // Ads insight
+      if (ads.totals.cost > 0) {
+        const enabledCampaigns = ads.campaigns.filter(c => c.status === 'ENABLED');
+        const topCampaign = enabledCampaigns.sort((a,b) => b.clicks - a.clicks)[0];
+        insights += `<div class="insight"><div class="insight-badge">📢 Google Ads</div>
+          Spent <strong>$${ads.totals.cost.toFixed(2)}</strong> across ${enabledCampaigns.length} active campaigns, generating ${ads.totals.clicks} clicks.
+          ${ads.totals.conversions === 0 ? '⚠️ <strong>Zero conversions</strong> — ad spend is not converting to tours. Landing pages or targeting may need work.' : `${ads.totals.conversions} conversions at $${ads.totals.cpa.toFixed(2)} CPA.`}
+          ${topCampaign ? `Top performer: <strong>${topCampaign.name}</strong> (${topCampaign.clicks} clicks, ${topCampaign.ctr}% CTR).` : ''}
+        </div>`;
+      }
+      
+      // SEO insight
+      if (gsc) {
+        const brandKws = gsc.keywords.filter(k => 
+          k.keyword.includes('amici') || k.keyword.includes('beibei') || k.keyword.includes('bei bei')
+        );
+        const nonBrandKws = gsc.keywords.filter(k => 
+          !k.keyword.includes('amici') && !k.keyword.includes('beibei') && !k.keyword.includes('bei bei')
+        );
+        insights += `<div class="insight"><div class="insight-badge">🕵️ SEO</div>
+          <strong>${gsc.page1Count} keywords</strong> ranking on page 1. 
+          ${gsc.totals.clicks} organic clicks from ${gsc.totals.impressions.toLocaleString()} impressions this week.
+          ${nonBrandKws.length > 0 ? `Top non-brand keyword: <strong>"${nonBrandKws[0].keyword}"</strong> at position ${nonBrandKws[0].position.toFixed(0)}.` : ''}
+        </div>`;
+      }
+      
+      // Set the first card body (AI Insights)
+      const aiCard = document.querySelectorAll('.card')[0];
+      aiCard.querySelector('.card-body').innerHTML = insights;
+    }
+    
+    // Keywords table
+    if (gsc && gsc.keywords.length > 0) {
+      const kwTable = document.querySelectorAll('.table-mini')[1]; // bottom left table
+      if (kwTable) {
+        const tbody = kwTable.querySelector('tbody');
+        tbody.innerHTML = gsc.keywords.slice(0, 5).map(k => `
+          <tr>
+            <td>${k.keyword}</td>
+            <td><strong>#${k.position.toFixed(0)}</strong></td>
+            <td><span class="score-change ${k.position <= 10 ? 'up' : 'down'}" style="font-size:10px">${k.position <= 10 ? '✓ Page 1' : 'Page ' + Math.ceil(k.position/10)}</span></td>
+            <td style="color:var(--text-dim)">${k.clicks} clicks</td>
+          </tr>
+        `).join('');
+      }
+    }
+    
+    // Campaigns in competitor table area (repurpose for campaigns)
+    if (ads && ads.campaigns.length > 0) {
+      const compTable = document.querySelectorAll('.table-mini')[2]; // bottom right table
+      if (compTable) {
+        compTable.querySelector('thead tr').innerHTML = '<th>Campaign</th><th>Clicks</th><th>Spend</th><th>Status</th>';
+        const tbody = compTable.querySelector('tbody');
+        tbody.innerHTML = ads.campaigns.filter(c => c.status === 'ENABLED').map(c => `
+          <tr>
+            <td><strong>${c.name.length > 30 ? c.name.substring(0,30) + '...' : c.name}</strong></td>
+            <td>${c.clicks}</td>
+            <td>$${c.cost.toFixed(2)}</td>
+            <td><span class="status live">${c.ctr}% CTR</span></td>
+          </tr>
+        `).join('');
+      }
+    }
+    
+    // Show errors if any
+    if (data.errors) {
+      console.warn('API Errors:', data.errors);
+    }
+    
+  } catch (err) {
+    document.querySelector('.topbar-left .date').textContent = 'Error loading data: ' + err.message;
+    console.error(err);
+  }
+}
+
+// Load daily traffic chart
+async function loadChart(schoolId) {
+  try {
+    const res = await fetch(`/api/ga4/${schoolId}/daily`);
+    const days = await res.json();
+    if (!days.length) return;
+    
+    const max = Math.max(...days.map(d => d.sessions));
+    const chart = document.querySelector('.chart-placeholder');
+    chart.innerHTML = days.map(d => {
+      const h = max > 0 ? Math.max(5, (d.sessions / max) * 100) : 5;
+      return `<div class="chart-bar" style="height:${h}%" title="${d.date}: ${d.sessions} sessions"></div>`;
+    }).join('');
+  } catch(e) { console.warn('Chart error:', e); }
+}
+
+// School switcher
+document.querySelector('.school-selector').addEventListener('click', () => {
+  const next = currentSchool === 'amici' ? 'beibei' : 'amici';
+  loadDashboard(next);
+  loadChart(next);
+});
+
+// Load on page ready
+loadDashboard('amici');
+loadChart('amici');
+</script>
+
+</body>
+</html>

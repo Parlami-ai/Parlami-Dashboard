@@ -1,4 +1,9 @@
-flask==3.1.0
+flask==3.1.2
 gunicorn==23.0.0
-requests==2.32.3
-markdown==3.7
+google-analytics-data==0.20.0
+google-ads==29.0.0
+google-api-python-client==2.190.0
+google-auth==2.48.0
+google-auth-httplib2==0.3.0
+google-auth-oauthlib==1.2.4
+googleapis-common-protos==1.72.0
