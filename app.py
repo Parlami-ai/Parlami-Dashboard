@@ -1,3 +1,4 @@
+import json
 #!/usr/bin/env python3
 """Parlami V2 Dashboard — Real data from GA4, Google Ads, GSC for both schools."""
 
@@ -42,26 +43,41 @@ ADS_ENV = os.path.expanduser("~/Projects/parlami_ai/.env")
 
 # === HELPERS ===
 def load_ads_env():
-    """Load Google Ads credentials from .env file."""
+    """Load Google Ads credentials from env vars or .env file."""
+    # Try environment variables first (Render), then fall back to .env file
+    if os.environ.get("GOOGLE_ADS_DEVELOPER_TOKEN"):
+        return {k: os.environ.get(k, '') for k in [
+            "GOOGLE_ADS_DEVELOPER_TOKEN", "GOOGLE_ADS_CLIENT_ID",
+            "GOOGLE_ADS_CLIENT_SECRET", "GOOGLE_ADS_REFRESH_TOKEN",
+            "GOOGLE_ADS_CUSTOMER_ID"
+        ]}
     creds = {}
-    with open(ADS_ENV) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                k, v = line.split('=', 1)
-                creds[k.strip()] = v.strip()
+    try:
+        with open(ADS_ENV) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    k, v = line.split('=', 1)
+                    creds[k.strip()] = v.strip()
+    except FileNotFoundError:
+        pass
     return creds
 
+def _get_sa_credentials(scopes):
+    """Get service account credentials from file or GOOGLE_SA_JSON env var."""
+    sa_json = os.environ.get("GOOGLE_SA_JSON")
+    if sa_json:
+        import json, tempfile
+        info = json.loads(sa_json)
+        return service_account.Credentials.from_service_account_info(info, scopes=scopes)
+    return service_account.Credentials.from_service_account_file(SA_KEY, scopes=scopes)
+
 def get_ga4_client():
-    credentials = service_account.Credentials.from_service_account_file(
-        SA_KEY, scopes=["https://www.googleapis.com/auth/analytics.readonly"]
-    )
+    credentials = _get_sa_credentials(["https://www.googleapis.com/auth/analytics.readonly"])
     return BetaAnalyticsDataClient(credentials=credentials)
 
 def get_gsc_service():
-    credentials = service_account.Credentials.from_service_account_file(
-        SA_KEY, scopes=["https://www.googleapis.com/auth/webmasters.readonly"]
-    )
+    credentials = _get_sa_credentials(["https://www.googleapis.com/auth/webmasters.readonly"])
     return build('searchconsole', 'v1', credentials=credentials)
 
 def get_ads_client():
